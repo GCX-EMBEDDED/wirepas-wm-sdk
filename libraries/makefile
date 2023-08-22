@@ -107,6 +107,9 @@ SRCS += $(WP_LIB_PATH)thingy_52/nrf_log_frontend.c
 SRCS += $(WP_LIB_PATH)thingy_52/nrf_strerror.c
 SRCS += $(WP_LIB_PATH)thingy_52/nrf_drv_common.c
 SRCS += $(WP_LIB_PATH)thingy_52/SEGGER_RTT.c
+SRCS += $(WP_LIB_PATH)thingy_52/drv_ext_light.c
+SRCS += $(WP_LIB_PATH)thingy_52/app_timer.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_saadc.c
 INCLUDES += -I$(WP_LIB_PATH)thingy_52
 endif
 
