@@ -24,7 +24,8 @@
 #include "shared_data.h"
 #include "app_scheduler.h"
 #include <drv_sx1509.h>
-
+#include "pca20020.h"
+#include "drv_ext_light.h"
 #define DEBUG_LOG_MODULE_NAME "EVAL_APP"
 /** To activate logs, configure the following line with "LVL_INFO". */
 #define DEBUG_LOG_MAX_LEVEL LVL_NOLOG
