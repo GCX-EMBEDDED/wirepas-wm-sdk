@@ -18,3 +18,4 @@ SHARED_APP_CONFIG_FILTERS=2
 # This application use HAL for buttons and leds
 HAL_BUTTON=yes
 HAL_LED=yes
+thingy_52=yes

@@ -23,7 +23,7 @@
 #include "button.h"
 #include "shared_data.h"
 #include "app_scheduler.h"
-
+#include <drv_sx1509.h>
 
 #define DEBUG_LOG_MODULE_NAME "EVAL_APP"
 /** To activate logs, configure the following line with "LVL_INFO". */
@@ -712,6 +712,8 @@ void App_init(const app_global_functions_t * functions)
                                   BUTTON_PRESSED,
                                   button_pressed_handler);
     }
+
+    drv_sx1509_init();
 
     /* Set a periodic task to be called after DEFAULT_PERIOD_MS. */
     m_period_ms = DEFAULT_PERIOD_MS;
