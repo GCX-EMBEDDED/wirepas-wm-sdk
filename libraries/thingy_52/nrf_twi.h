@@ -39,7 +39,8 @@
  */
 #ifndef NRF_TWI_H__
 #define NRF_TWI_H__
-
+// Thingy52 board 
+#define NRF52832_XXAA
 /**
  * @defgroup nrf_twi_hal TWI HAL
  * @{

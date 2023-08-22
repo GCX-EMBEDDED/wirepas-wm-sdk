@@ -20,7 +20,7 @@ BOARDS_PATH_INTERNAL := board_internal/
 MCU_PATH := mcu/
 
 # General compiler flags (Define it before specific makefile in order to allow app to overwrite it)
-CFLAGS  := -Wall -Werror -Wextra
+CFLAGS  := -Wall -Wextra
 CFLAGS  += -std=gnu99 -mthumb -nostartfiles -lgcc -lnosys -ggdb --specs=nano.specs
 CFLAGS  += -Os -ffunction-sections -fdata-sections
 

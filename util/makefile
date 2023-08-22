@@ -5,10 +5,7 @@ SRCS += $(UTIL_PATH)crc.c     \
         $(UTIL_PATH)api.c     \
         $(UTIL_PATH)pack.c \
         $(UTIL_PATH)random.c \
-        $(UTIL_PATH)tlv.c \
-        $(UTIL_PATH)twi_manager.c 
-
-INCLUDES += $(UTIL_PATH)twi_manager.h
+        $(UTIL_PATH)tlv.c 
 
 ifeq ($(APP_PRINTING), yes)
 CFLAGS += -DAPP_PRINTING
