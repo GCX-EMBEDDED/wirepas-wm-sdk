@@ -93,5 +93,13 @@ include $(WP_LIB_PATH)dualmcu/waps/makefile
 include $(WP_LIB_PATH)dualmcu/drivers/makefile
 endif
 
+ifeq ($(thingy_52), yes)
+SRCS += $(WP_LIB_PATH)thingy_52/drv_sx1509.c
+SRCS += $(WP_LIB_PATH)thingy_52/drv_ext_gpio.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_drv_twi.c
+SRCS += $(WP_LIB_PATH)thingy_52/app_util_platform.c
+INCLUDES += -I$(WP_LIB_PATH)thingy_52
+endif
+
 SRCS += $(WP_LIB_PATH)libraries_init.c
 INCLUDES += -I$(WP_LIB_PATH)
