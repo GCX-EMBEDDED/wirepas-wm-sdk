@@ -77,7 +77,7 @@ SXIO15   SENSE_LED_B            Blue color of the color sensor support LED
 
 // Serial port pins
 #define BOARD_USART_TX_PIN              2
-#define BOARD_USART_RX_PIN              4
+#define BOARD_USART_RX_PIN              3
 
 // Active low polarity for LEDs
 #define BOARD_LED_ACTIVE_LOW            true
