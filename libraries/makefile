@@ -110,7 +110,16 @@ SRCS += $(WP_LIB_PATH)thingy_52/SEGGER_RTT.c
 SRCS += $(WP_LIB_PATH)thingy_52/drv_ext_light.c
 SRCS += $(WP_LIB_PATH)thingy_52/app_timer.c
 SRCS += $(WP_LIB_PATH)thingy_52/nrf_saadc.c
+SRCS += $(WP_LIB_PATH)thingy_52/sx150x_led_drv_calc.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_drv_gpiote.c
+SRCS += $(WP_LIB_PATH)thingy_52/system_nrf52.c
+SRCS += $(WP_LIB_PATH)thingy_52/support_func.c
+SRCS += $(WP_LIB_PATH)thingy_52/softdevice_handler.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_nvic.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_drv_rng.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_queue.c
 INCLUDES += -I$(WP_LIB_PATH)thingy_52
+LDFLAGS += -lm
 endif
 
 SRCS += $(WP_LIB_PATH)libraries_init.c

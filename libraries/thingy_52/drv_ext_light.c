@@ -44,7 +44,11 @@
 #include "sx150x_led_drv_regs.h"
 #include "nrf_delay.h"
 #include <stdint.h>
+#define DEBUG_LOG_MODULE_NAME "EVAL_APP"
+/** To activate logs, configure the following line with "LVL_INFO". */
+#define DEBUG_LOG_MAX_LEVEL LVL_DEBUG
 
+#include "debug_log.h"
 #define COLOR_R_POS  0                              ///< Bitwise position of red color.
 #define COLOR_R_MSK (1 << COLOR_R_POS)              ///< Red color mask.
 #define COLOR_G_POS  1                              ///< Bitwise position of green color.
@@ -990,11 +994,11 @@ ret_code_t drv_ext_light_init(drv_ext_light_init_t const * const p_init, bool on
         nrf_gpio_cfg_output(IOEXT_OSC_RUNNING_LIGHT);
         OSC_RUN_LIGHT_OFF
     #endif
-
+    LOG(LVL_DEBUG, "Try to sx150x_led_drv_calc_init");
     sx150x_led_drv_calc_init(DRV_SX1509_FADE_SUPPORTED_PORT_MASK, m_clkx_tics_pr_sec);
-
+    LOG(LVL_DEBUG, "Try to drv_sx1509_init");
     drv_sx1509_init();
-
+    LOG(LVL_DEBUG, "Try to drv_sx1509_open");
     /* Write general configuration to the IO extender. */
     err_code = drv_sx1509_open(m_p_drv_sx1509_cfg);
     RETURN_IF_ERROR(err_code);
@@ -1004,7 +1008,7 @@ ret_code_t drv_ext_light_init(drv_ext_light_init_t const * const p_init, bool on
         err_code = drv_sx1509_reset();
         RETURN_IF_ERROR(err_code);
     }
-
+    LOG(LVL_DEBUG, "Try to drv_sx1509_misc_modify");
     err_code = drv_sx1509_misc_modify((m_clkx_div << DRV_SX1509_MISC_CLKX_Pos),
                                                      DRV_SX1509_MISC_CLKX_Msk);
     RETURN_IF_ERROR(err_code);
@@ -1072,7 +1076,7 @@ ret_code_t drv_ext_light_init(drv_ext_light_init_t const * const p_init, bool on
             RETURN_IF_ERROR(err_code);
         }
     }
-
+    LOG(LVL_DEBUG, "Try to end");
     err_code = drv_sx1509_close();
     RETURN_IF_ERROR(err_code);
 
