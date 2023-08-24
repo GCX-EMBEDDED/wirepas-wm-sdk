@@ -23,12 +23,24 @@
 #include "button.h"
 #include "shared_data.h"
 #include "app_scheduler.h"
-#include <drv_sx1509.h>
-#include "pca20020.h"
+
+#include "nordic_common.h"
+#include "nrf.h"
+#include "softdevice_handler.h"
+
+
+#include "app_util_platform.h"
+#include "m_ui.h"
 #include "drv_ext_light.h"
+#include "drv_ext_gpio.h"
+#include "nrf_delay.h"
+#include "twi_manager.h"
+#include "support_func.h"
+#include "pca20020.h"
+
 #define DEBUG_LOG_MODULE_NAME "EVAL_APP"
 /** To activate logs, configure the following line with "LVL_INFO". */
-#define DEBUG_LOG_MAX_LEVEL LVL_NOLOG
+#define DEBUG_LOG_MAX_LEVEL LVL_DEBUG
 
 #include "debug_log.h"
 
@@ -57,6 +69,10 @@
 /** Time needed to execute the send "button pressed message" task, in us. */
 #define TASK_EXEC_TIME_US_SEND_BUTTON_PRESSED_MSG (250u)
 
+
+static const nrf_drv_twi_t     m_twi_sensors = NRF_DRV_TWI_INSTANCE(TWI_SENSOR_INSTANCE);
+
+static void board_init(void);
 
 /**
  *  In this example the periodic data transfer interval is changed according
@@ -264,6 +280,7 @@ static shared_data_item_t broadcast_packets_filter =
 static app_lib_data_send_res_e send_uplink_msg(message_id_e id,
                                                uint8_t * payload)
 {
+    LOG(LVL_DEBUG, "send_uplink_msg: Data sent");
     msg_t msg; /* Create uplink message structure. */
     size_t msg_byte_size = sizeof(msg.id); /* Message to send byte size. */
 
@@ -355,7 +372,7 @@ static uint32_t task_send_periodic_msg(void)
 
     /* Increment value to send. */
     counter_value++;
-
+    LOG(LVL_DEBUG, "task_send_periodic_msg, counter_value: %d ", counter_value );
     /*
      * Inform the stack that this function should be called again in
      * m_period_ms milliseconds. By returning APP_SCHEDULER_STOP_TASK,
@@ -376,7 +393,7 @@ static uint32_t task_send_periodic_msg(void)
  *          This task is called when a button is pressed down.
  */
 static uint32_t task_send_button_pressed_msg(void)
-{
+{   LOG(LVL_DEBUG, "task_send_button_pressed_msg");
     payload_button_event_t payload;      /* Message payload data. */
 
     /* Prepare payload data field. */
@@ -414,7 +431,7 @@ static void button_pressed_handler(uint8_t button_id, button_event_e event)
 {
     /* Store button_id to process it in a dedicated application task. */
     m_button_pressed_id = button_id;
-
+    LOG(LVL_DEBUG, "Button %d is has been pressed", button_id);
     /*
      * Send "button pressed message" in a single shot application task (called
      * each time button is pressed) as we are here in an IRQ context.
@@ -424,6 +441,12 @@ static void button_pressed_handler(uint8_t button_id, button_event_e event)
                                    TASK_EXEC_TIME_US_SEND_BUTTON_PRESSED_MSG);
 }
 
+static void button_released_handler(uint8_t button_id, button_event_e event)
+{
+    /* Store button_id to process it in a dedicated application task. */
+    m_button_pressed_id = button_id;
+    LOG(LVL_DEBUG, "Button %d is has been released", button_id);
+}
 /**
  * @brief   Echo command response sending function
  * @param   delay
@@ -474,7 +497,7 @@ static void set_periodic_msg_period(uint32_t new_period_ms)
             (new_period_ms <= PERIODIC_MSG_PERIOD_SET_MAX_VAL_MS))
     {
         m_period_ms = new_period_ms;
-
+        LOG(LVL_DEBUG, "Data sent");
         /* Reschedule task to apply new period value. */
         App_Scheduler_addTask_execTime(task_send_periodic_msg,
                                        APP_SCHEDULER_SCHEDULE_ASAP,
@@ -566,7 +589,7 @@ static app_lib_data_receive_res_e unicast_broadcast_data_received_cb(
 {
     msg_t msg = *((msg_t *)data->bytes);
     uint8_t msg_size = data->num_bytes;
-
+    LOG(LVL_DEBUG, "Data received");
     if ((msg_size < sizeof(msg.id)))
     {
         /* Data is not for this application. */
@@ -699,23 +722,34 @@ void App_init(const app_global_functions_t * functions)
 #ifdef ENABLE_LOW_LATENCY_MODE
     lib_settings->setNodeRole(APP_LIB_SETTINGS_ROLE_AUTOROLE_LL);
 #endif
+
+    //----------------------------------section *
+    m_ui_init_t ui_params;
+    board_init();
+    // /**@brief Initialize the TWI manager. */
+    twi_manager_init(APP_IRQ_PRIORITY_THREAD);
+    // /**@brief Initialize LED and button UI module. */
+    ui_params.p_twi_instance = &m_twi_sensors;
+    m_ui_init(&ui_params);
+    //----------------------------------section *
+    
     /* Set up LED. */
     Led_init();
 
-    /* Set up buttons. */
+    /* Set up buttons. Should be done after section * */
     Button_init();
     num_buttons = Button_get_number();
-
+    LOG(LVL_INFO, "num_buttons=%d\n", num_buttons);
     for (uint8_t button_id = 0; button_id < num_buttons; button_id++)
     {
         /* Register button pressed event on all user available button. */
         Button_register_for_event(button_id,
                                   BUTTON_PRESSED,
                                   button_pressed_handler);
+        Button_register_for_event(button_id,
+                                  BUTTON_RELEASED,
+                                  button_released_handler);
     }
-
-    drv_sx1509_init();
-
     /* Set a periodic task to be called after DEFAULT_PERIOD_MS. */
     m_period_ms = DEFAULT_PERIOD_MS;
     App_Scheduler_addTask_execTime(task_send_periodic_msg,
@@ -726,6 +760,15 @@ void App_init(const app_global_functions_t * functions)
     Shared_Data_addDataReceivedCb(&unicast_packets_filter);
     Shared_Data_addDataReceivedCb(&broadcast_packets_filter);
 
+    // int err_code;
+    // m_ui_init_t ui_params;
+    // board_init();
+    // // /**@brief Initialize the TWI manager. */
+    // twi_manager_init(APP_IRQ_PRIORITY_THREAD);
+    // // /**@brief Initialize LED and button UI module. */
+    // ui_params.p_twi_instance = &m_twi_sensors;
+    // m_ui_init(&ui_params);
+
     /*
      * Start the stack.
      * This is really important step, otherwise the stack will stay stopped and
@@ -733,4 +776,30 @@ void App_init(const app_global_functions_t * functions)
      * without reflashing it.
      */
     lib_state->startStack();
+}
+
+static void board_init(void)
+{
+    drv_ext_gpio_init_t ext_gpio_init;
+    static const nrf_drv_twi_config_t twi_config =
+    {
+        .scl                = TWI_SCL,
+        .sda                = TWI_SDA,
+        .frequency          = NRF_TWI_FREQ_400K,
+        .interrupt_priority = 3
+    };
+
+    static const drv_sx1509_cfg_t sx1509_cfg =
+    {
+        .twi_addr       = SX1509_ADDR,
+        .p_twi_instance = &m_twi_sensors,
+        .p_twi_cfg      = &twi_config
+    };
+
+    ext_gpio_init.p_cfg = &sx1509_cfg;
+    
+    support_func_configure_io_startup(&ext_gpio_init);
+
+
+    nrf_delay_ms(100);
 }

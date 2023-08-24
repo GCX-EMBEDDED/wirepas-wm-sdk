@@ -1,5 +1,5 @@
 # Boards compatible with this app 
-TARGET_BOARDS := pca10056 pca10100 tbsense2 pca10040 ruuvitag pan1780 nrf52832_thingy_52
+TARGET_BOARDS := pca10056 pca10100 tbsense2 pca10040 ruuvitag pan1780 pca20020
 # Boards compatible with this app
 #
 # Network default settings configuration
@@ -7,8 +7,8 @@ TARGET_BOARDS := pca10056 pca10100 tbsense2 pca10040 ruuvitag pan1780 nrf52832_t
 
 # If this section is removed, node has to be configured in
 # a different way
-default_network_address ?= 0xD8D42B
-default_network_channel ?= 9
+default_network_address ?= 0x123456
+default_network_channel ?= 2
 
 # !HIGHLY RECOMMENDED! : To enable security keys please un-comment the lines below and fill with a
 #                        randomly generated authentication & encryption keys (exactly 16 bytes)
@@ -23,7 +23,7 @@ default_network_channel ?= 9
 app_specific_area_id=0x80597B
 
 #define node operating mode (i.e low-energy or low-latency : 0 => low-energy / 1 => low-latency)
-default_operating_mode ?= 0
+default_operating_mode ?= 1
 
 # App version
 app_major=1
