@@ -36,32 +36,32 @@
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file Humidity sensor
+/** @file Humidity-Temperature sensor
  *
- * @defgroup humidity_driver Humidity sensor
+ * @defgroup humidity-temperature_driver Humidity-Temperature sensor
  * @{
  * @ingroup drivers
- * @brief Humidity sensor API.
+ * @brief Humidity-Temperature sensorAPI.
  *
  */
 
-#ifndef __DRV_HUMIDITY_H__
-#define __DRV_HUMIDITY_H__
+#ifndef __DRV_HUMIDITY_TEMPERATURE_H__
+#define __DRV_HUMIDITY_TEMPERATURE_H__
 
 #include "nrf_drv_twi.h"
 #include <stdint.h>
 
-/**@brief Humidity driver event types.
+/**@brief Humidity-Temperature driver event types.
  */
 typedef enum
 {
-    DRV_HUMIDITY_EVT_DATA,    /**<Converted value ready to be read.*/
-    DRV_HUMIDITY_EVT_ERROR    /**<Hardware error on the communication bus.*/
-}drv_humidity_evt_t;
+    DRV_HUMIDITY_TEMPERATURE_EVT_DATA,    /**<Converted value ready to be read.*/
+    DRV_HUMIDITY_TEMPERATURE_EVT_ERROR    /**<Hardware error on the communication bus.*/
+}drv_humidity_temperature_evt_t;
 
-/**@brief Humidity driver event handler callback type.
+/**@brief  Humidity-Temperature driver event handler callback type.
  */
-typedef void (*drv_humidity_evt_handler_t)(drv_humidity_evt_t evt);
+typedef void (*drv_humidity_temperature_evt_handler_t)(drv_humidity_temperature_evt_t evt);
 
 /**@brief Initialization struct for the humidity driver.
  */
@@ -71,36 +71,36 @@ typedef struct
     uint32_t                     pin_int;
     nrf_drv_twi_t        const * p_twi_instance;  ///< The instance of TWI master to be used for transactions.
     nrf_drv_twi_config_t const * p_twi_cfg;       ///< The TWI configuration to use while the driver is enabled.
-    drv_humidity_evt_handler_t   evt_handler;
-}drv_humidity_init_t;
+    drv_humidity_temperature_evt_handler_t   evt_handler;
+}drv_humidity_temperature_init_t;
 
-/**@brief Function for initializing the humidity driver.
+/**@brief Function for initializing the humidity-temperature driver.
  *
  * @param[in] p_params      Pointer to init parameters.
  *
  * @retval NRF_SUCCESS             If initialization was successful.
  * @retval NRF_ERROR_INVALID_STATE If the driver is in invalid state.
  */
-uint32_t drv_humidity_init(drv_humidity_init_t * p_params);
+uint32_t drv_humidity_temperature_init(drv_humidity_temperature_init_t * p_params);
 
-/**@brief Function for enabling the humidity sensor.
+/**@brief Function for enabling the humidity-temperature sensor.
  *
  * @retval NRF_SUCCESS             If initialization was successful.
  */
-uint32_t drv_humidity_enable(void);
+uint32_t drv_humidity_temperature_enable(void);
 
-/**@brief Function for disabling the humidity sensor.
+/**@brief Function for disabling the humidity-temperature sensor.
  *
  * @retval NRF_SUCCESS             If initialization was successful.
  */
-uint32_t drv_humidity_disable(void);
+uint32_t drv_humidity_temperature_disable(void);
 
 /**@brief Function for resetting the chip to all default register values
 *
 * @retval NRF_SUCCESS             If operation was successful
 * @retval NRF_ERROR_BUSY          If TWI bus was busy
 */
-uint32_t drv_humidity_reset(void);
+uint32_t drv_humidity_temperature_reset(void);
 
 /**@brief Function for getting the humidity data.
  *
@@ -118,7 +118,7 @@ float drv_humidity_temp_get(void);
  *
  * @retval NRF_SUCCESS             If start sampling was successful.
  */
-uint32_t drv_humidity_sample(void);
+uint32_t drv_humidity_temperature_sample(void);
 
 #endif
 

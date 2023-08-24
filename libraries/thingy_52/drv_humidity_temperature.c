@@ -37,12 +37,12 @@
  */
 
 #include <string.h>
-#include "drv_humidity.h"
+#include "drv_humidity_temperature.h"
 #include "twi_manager.h"
 #include "drv_hts221.h"
 #include "nrf_drv_gpiote.h"
 #include "app_scheduler.h"
-#define  NRF_LOG_MODULE_NAME "drv_humidity  "
+#define  NRF_LOG_MODULE_NAME "drv_humidity_temperature.h  "
 #include "nrf_log.h"
 #include "macros_common.h"
 
@@ -50,10 +50,10 @@
  */
 typedef struct
 {
-    drv_hts221_twi_cfg_t         cfg;           ///< HTS221 configuraion.
-    drv_humidity_evt_handler_t   evt_handler;   ///< Event handler, called when data is ready.
-    bool                         enabled;       ///< Driver enabled flag.
-    drv_hts221_calib_t           calib;         ///< Calibration struct.
+    drv_hts221_twi_cfg_t                     cfg;           ///< HTS221 configuraion.
+    drv_humidity_temperature_evt_handler_t   evt_handler;   ///< Event handler, called when data is ready.
+    bool                                     enabled;       ///< Driver enabled flag.
+    drv_hts221_calib_t                       calib;         ///< Calibration struct.
 } drv_humidity_t;
 
 /**@brief Stored configuration.
@@ -65,7 +65,7 @@ static drv_humidity_t m_drv_humidity;
 static void gpiote_evt_sceduled(void * p_event_data, uint16_t event_size)
 {
     // Data ready
-    m_drv_humidity.evt_handler(DRV_HUMIDITY_EVT_DATA);
+    m_drv_humidity.evt_handler(DRV_HUMIDITY_TEMPERATURE_EVT_DATA);
 }
 
 
@@ -118,7 +118,7 @@ static void gpiote_uninit(uint32_t pin)
 }
 
 
-uint32_t drv_humidity_init(drv_humidity_init_t * p_params)
+uint32_t drv_humidity_temperature_init(drv_humidity_temperature_init_t * p_params)
 {
     uint32_t err_code;
     uint8_t status;
@@ -180,7 +180,7 @@ uint32_t drv_humidity_init(drv_humidity_init_t * p_params)
 }
 
 
-uint32_t drv_humidity_enable(void)
+uint32_t drv_humidity_temperature_enable(void)
 {
     uint32_t err_code;
 
@@ -333,7 +333,7 @@ float drv_humidity_temp_get(void)
 }
 
 
-uint32_t drv_humidity_sample(void)
+uint32_t drv_humidity_temperature_sample(void)
 {
     uint32_t err_code;
 
