@@ -65,32 +65,6 @@ enum
     M_IU_STATUS_CODE_INVALID_PARAM,                         ///< Invalid parameters supplied.
 };
 
-/** @brief Default LED configuration when an error occurs.
- */
-#define UI_CONFIG_DEFAULT_ERROR                                 \
-{                                                               \
-    .mode = BLE_UIS_LED_MODE_BREATHE,                           \
-    .data =                                                     \
-    {                                                           \
-        .mode_breathe =                                         \
-        {                                                       \
-            .color_mix  = (uint8_t)DRV_EXT_LIGHT_COLOR_RED,     \
-            .intensity  = DEFAULT_LED_INTENSITY_PERCENT,        \
-            .delay      = DEFAULT_LED_OFF_TIME_MS / 4           \
-        }                                                       \
-    }                                                           \
-}
-
-/** @brief Default LED sequence values.
- */
-#define SEQUENCE_DEFAULT_VALUES                                     \
-{                                                                   \
-    .sequence_vals.on_time_ms       = DEFAULT_LED_ON_TIME_MS,       \
-    .sequence_vals.on_intensity     = 0xFF,                         \
-    .sequence_vals.off_intensity    = 0,                            \
-    .sequence_vals.fade_in_time_ms  = DEFAULT_LED_FADE_IN_TIME,     \
-    .sequence_vals.fade_out_time_ms = DEFAULT_LED_FADE_OUT_TIME,    \
-}
 
 /** @brief Predefined events linked to corresponding LED configurations.
  */
@@ -130,15 +104,6 @@ ret_code_t m_ui_init(m_ui_init_t * p_params);
  */
 ret_code_t m_ui_led_set(uint8_t r, uint8_t g, uint8_t b);
 
-/**
- * @brief Function for setting LED color according to predefined events.
- *
- * @param[in]   event_code  Predefined event code.
- *
- * @retval NRF_SUCCESS      If initialization was successful.
- * @retval Other codes from the underlying drivers.
- */
-ret_code_t m_ui_led_set_event(ui_led_events event_code);
 #endif /*__THINGY_UI_H__*/
 
 /** @} */
