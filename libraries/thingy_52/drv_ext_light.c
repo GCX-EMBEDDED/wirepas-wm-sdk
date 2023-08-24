@@ -44,11 +44,7 @@
 #include "sx150x_led_drv_regs.h"
 #include "nrf_delay.h"
 #include <stdint.h>
-#define DEBUG_LOG_MODULE_NAME "EVAL_APP"
-/** To activate logs, configure the following line with "LVL_INFO". */
-#define DEBUG_LOG_MAX_LEVEL LVL_DEBUG
 
-#include "debug_log.h"
 #define COLOR_R_POS  0                              ///< Bitwise position of red color.
 #define COLOR_R_MSK (1 << COLOR_R_POS)              ///< Red color mask.
 #define COLOR_G_POS  1                              ///< Bitwise position of green color.
@@ -598,11 +594,12 @@ static ret_code_t m_rgb_intensity(uint32_t id, drv_ext_light_rgb_intensity_t con
     ret_code_t err_code;
     m_p_light_conf[id].p_data->p_status->colors = DRV_EXT_LIGHT_COLOR_NONE; // No need to set as the color is given by p_intensity in this mode of operation.
 
+    /*The timer was not initialized in app.c because there is no need for it as we dont use LEDs-Patterns that needs timing therefore the following lines have been commented*/
     /* Stop any running timers on this light ID as a new command is about to be issued.
     Note that if a timer already has expired, this will have no effect and the light timer handler will run once
     the code reaches app_sched_execute(); */
-    err_code = app_timer_stop(m_p_light_conf[id].p_data->timer);
-    RETURN_IF_ERROR(err_code);
+    //err_code = app_timer_stop(m_p_light_conf[id].p_data->timer);
+    //RETURN_IF_ERROR(err_code);
 
     if ( ( (p_intenstity->r == 0) || (p_intenstity->r == 0xFF) ) &&
          ( (p_intenstity->g == 0) || (p_intenstity->g == 0xFF) ) &&
@@ -980,7 +977,7 @@ ret_code_t drv_ext_light_init(drv_ext_light_init_t const * const p_init, bool on
     if ( !((p_init->p_light_conf->type == DRV_EXT_LIGHT_TYPE_MONO) || (p_init->p_light_conf->type == DRV_EXT_LIGHT_TYPE_RGB)) )
     {
        err_code = DRV_EXT_LIGHT_STATUS_CODE_INVALID_PARAM;
-       RETURN_IF_ERROR(err_code);
+       RETURN_IF_ERROR(err_code); 
     }
 
     m_p_light_conf          = p_init->p_light_conf;
@@ -994,11 +991,11 @@ ret_code_t drv_ext_light_init(drv_ext_light_init_t const * const p_init, bool on
         nrf_gpio_cfg_output(IOEXT_OSC_RUNNING_LIGHT);
         OSC_RUN_LIGHT_OFF
     #endif
-    LOG(LVL_DEBUG, "Try to sx150x_led_drv_calc_init");
+
     sx150x_led_drv_calc_init(DRV_SX1509_FADE_SUPPORTED_PORT_MASK, m_clkx_tics_pr_sec);
-    LOG(LVL_DEBUG, "Try to drv_sx1509_init");
+
     drv_sx1509_init();
-    LOG(LVL_DEBUG, "Try to drv_sx1509_open");
+
     /* Write general configuration to the IO extender. */
     err_code = drv_sx1509_open(m_p_drv_sx1509_cfg);
     RETURN_IF_ERROR(err_code);
@@ -1008,16 +1005,17 @@ ret_code_t drv_ext_light_init(drv_ext_light_init_t const * const p_init, bool on
         err_code = drv_sx1509_reset();
         RETURN_IF_ERROR(err_code);
     }
-    LOG(LVL_DEBUG, "Try to drv_sx1509_misc_modify");
+
     err_code = drv_sx1509_misc_modify((m_clkx_div << DRV_SX1509_MISC_CLKX_Pos),
                                                      DRV_SX1509_MISC_CLKX_Msk);
     RETURN_IF_ERROR(err_code);
-    
+
     if(m_resync_pin != DRV_EXT_LIGHT_INVALID_RESYNC_PIN) // If resync pin in set, reconfigure the IO extender to resync on the NRESET pin.
     {
         err_code = drv_sx1509_misc_modify((1 << DRV_SX1509_MISC_FUNC_Pos),
                                                 DRV_SX1509_MISC_FUNC_Msk);
-        RETURN_IF_ERROR(err_code);
+        /*If the following line is not commented the device will keep rebooting!*/                                        
+        //RETURN_IF_ERROR(err_code);
         nrf_gpio_cfg_output(m_resync_pin);
         nrf_gpio_pin_set(m_resync_pin);
     }
@@ -1028,8 +1026,9 @@ ret_code_t drv_ext_light_init(drv_ext_light_init_t const * const p_init, bool on
         // Initialize the IO extender osc status for each of the connected lights.
         m_p_light_conf[id].p_data->p_status->ioext_osc_status = EXTENDER_OSC_UNUSED;
 
-        err_code = app_timer_create(&m_p_light_conf[id].p_data->timer, APP_TIMER_MODE_SINGLE_SHOT, m_light_timer_handler);
-        RETURN_IF_ERROR(err_code);
+        /*The timer was not initialized in app.c because there is no need for it as we dont use LEDs-Patterns that needs timing therefore the following lines have been commented*/
+        //err_code = app_timer_create(&m_p_light_conf[id].p_data->timer, APP_TIMER_MODE_SINGLE_SHOT, m_light_timer_handler);
+        //RETURN_IF_ERROR(err_code);
 
         err_code = m_port_mask_create(id, DRV_EXT_LIGHT_COLOR_WHITE, &port_mask);
         RETURN_IF_ERROR(err_code);
@@ -1076,11 +1075,9 @@ ret_code_t drv_ext_light_init(drv_ext_light_init_t const * const p_init, bool on
             RETURN_IF_ERROR(err_code);
         }
     }
-    LOG(LVL_DEBUG, "Try to end");
+
     err_code = drv_sx1509_close();
     RETURN_IF_ERROR(err_code);
-
-    NRF_LOG_DEBUG("Initialized \r\n");
 
     return DRV_EXT_LIGHT_STATUS_CODE_SUCCESS;
 }

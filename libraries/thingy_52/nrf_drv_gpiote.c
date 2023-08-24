@@ -38,7 +38,7 @@
  * 
  */
 #include "sdk_common.h"
-#if NRF_MODULE_ENABLED(GPIOTE)
+
 #include "nrf_drv_gpiote.h"
 #include "nrf_drv_common.h"
 #include "app_util_platform.h"
@@ -57,6 +57,9 @@
 #endif  // GPIOTE_CONFIG_LOG_ENABLED
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
+
+#define GPIOTE_CONFIG_IRQ_PRIORITY 6
+#define GPIOTE_CONFIG_NUM_OF_LOW_POWER_EVENTS 8 
 
 /* Validate configuration */
 INTERRUPT_PRIORITY_VALIDATION(GPIOTE_CONFIG_IRQ_PRIORITY);
@@ -802,7 +805,3 @@ void GPIOTE_IRQHandler(void)
         while (repeat);
     }
 }
-
-
-/*lint -restore*/
-#endif // NRF_MODULE_ENABLED(GPIOTE)
