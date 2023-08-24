@@ -60,6 +60,18 @@ static bool        m_get_humidity                   = false;
 static bool        m_get_temperature                = false;
 
 env_config config_env_intervals;
+temperature_t temp;
+humidity_t humid;
+
+temperature_t get_temperature(void)
+{
+   return temp;
+}
+
+uint8_t get_humidity(void)
+{
+   return humid;
+}
 
 /**@brief Function for converting the temperature sample.
  */
@@ -90,12 +102,11 @@ static void drv_humidity_evt_handler(drv_humidity_temperature_evt_t event)
 }
 
 
-uint32_t get_temperature(void)
+uint32_t update_temperature(void)
 {
    m_get_temperature = true;
    drv_humidity_temperature_enable();
    drv_humidity_temperature_sample();
-   temperature_t temp;
    float temperature = drv_humidity_temp_get();
    temperature_conv_data(temperature, &temp);
    m_get_temperature = false;
@@ -105,12 +116,11 @@ uint32_t get_temperature(void)
 
 /**@brief Function for starting humidity sampling.
  */
-uint32_t get_humidity(void)
+uint32_t update_humidity(void)
 {
     m_get_humidity = true;
     drv_humidity_temperature_enable();
     drv_humidity_temperature_sample();
-    humidity_t humid;
     uint16_t humidity = drv_humidity_get();
     humidity_conv_data(humidity, &humid);
     m_get_humidity = false;

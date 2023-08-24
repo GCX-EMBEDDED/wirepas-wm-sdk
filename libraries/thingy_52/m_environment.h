@@ -74,10 +74,13 @@ typedef PACKED( struct
 
 typedef uint8_t humidity_t;
 
-uint32_t get_temperature(void);
+uint32_t update_temperature(void);
 
-uint32_t get_humidity(void);
+uint32_t update_humidity(void);
 
+temperature_t get_temperature(void);
+
+uint8_t get_humidity(void);
 /**@brief Function for initializing the environment module.
  *
  * @param[in] p_handle  Pointer to the location to store the service handle.
