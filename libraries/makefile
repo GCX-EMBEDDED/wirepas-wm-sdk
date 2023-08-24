@@ -119,6 +119,10 @@ SRCS += $(WP_LIB_PATH)thingy_52/nrf_nvic.c
 SRCS += $(WP_LIB_PATH)thingy_52/nrf_drv_rng.c
 SRCS += $(WP_LIB_PATH)thingy_52/nrf_queue.c
 SRCS += $(WP_LIB_PATH)thingy_52/m_ui.c
+SRCS += $(WP_LIB_PATH)thingy_52/app_scheduler.c
+SRCS += $(WP_LIB_PATH)thingy_52/drv_hts221.c
+SRCS += $(WP_LIB_PATH)thingy_52/drv_humidity.c
+SRCS += $(WP_LIB_PATH)thingy_52/m_environment.c
 INCLUDES += -I$(WP_LIB_PATH)thingy_52
 LDFLAGS += -lm
 endif

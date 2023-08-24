@@ -8,7 +8,7 @@ SHARED_DATA=yes
 
 # Use App Scheduler and configure it
 APP_SCHEDULER=yes
-APP_SCHEDULER_TASKS=2
+APP_SCHEDULER_TASKS=4
 
 APP_PRINTING=yes
 

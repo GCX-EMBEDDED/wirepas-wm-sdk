@@ -38,6 +38,8 @@
 #include "support_func.h"
 #include "pca20020.h"
 
+#include "m_environment.h"
+
 #define DEBUG_LOG_MODULE_NAME "EVAL_APP"
 /** To activate logs, configure the following line with "LVL_INFO". */
 #define DEBUG_LOG_MAX_LEVEL LVL_DEBUG
@@ -432,13 +434,20 @@ static void button_pressed_handler(uint8_t button_id, button_event_e event)
     /* Store button_id to process it in a dedicated application task. */
     m_button_pressed_id = button_id;
     LOG(LVL_DEBUG, "Button %d is has been pressed", button_id);
+   
     /*
      * Send "button pressed message" in a single shot application task (called
      * each time button is pressed) as we are here in an IRQ context.
      */
-    App_Scheduler_addTask_execTime(task_send_button_pressed_msg,
+    // App_Scheduler_addTask_execTime(task_send_button_pressed_msg,
+    //                                APP_SCHEDULER_SCHEDULE_ASAP,
+    //                                TASK_EXEC_TIME_US_SEND_BUTTON_PRESSED_MSG);
+    App_Scheduler_addTask_execTime(get_temperature,
                                    APP_SCHEDULER_SCHEDULE_ASAP,
-                                   TASK_EXEC_TIME_US_SEND_BUTTON_PRESSED_MSG);
+                                   1000u);
+    App_Scheduler_addTask_execTime(get_humidity,
+                                   APP_SCHEDULER_SCHEDULE_ASAP,
+                                   1000u);                                 
 }
 
 static void button_released_handler(uint8_t button_id, button_event_e event)
@@ -500,7 +509,7 @@ static void set_periodic_msg_period(uint32_t new_period_ms)
         LOG(LVL_DEBUG, "Data sent");
         /* Reschedule task to apply new period value. */
         App_Scheduler_addTask_execTime(task_send_periodic_msg,
-                                       APP_SCHEDULER_SCHEDULE_ASAP,
+                                       10,
                                        PERIODIC_WORK_EXECUTION_TIME_US);
     }
     else
@@ -732,7 +741,11 @@ void App_init(const app_global_functions_t * functions)
     ui_params.p_twi_instance = &m_twi_sensors;
     m_ui_init(&ui_params);
     //----------------------------------section *
+    m_environment_init_t     env_params;
+    env_params.p_twi_instance = &m_twi_sensors;
+    m_environment_init(&env_params);
     
+    //humidity_start();
     /* Set up LED. */
     Led_init();
 
@@ -756,6 +769,9 @@ void App_init(const app_global_functions_t * functions)
                                    APP_SCHEDULER_SCHEDULE_ASAP,
                                    PERIODIC_WORK_EXECUTION_TIME_US);
 
+    // App_Scheduler_addTask_execTime(get_humidity,
+    //                                10,
+    //                                1500u);
     /* Set unicast & broadcast received messages callback. */
     Shared_Data_addDataReceivedCb(&unicast_packets_filter);
     Shared_Data_addDataReceivedCb(&broadcast_packets_filter);
