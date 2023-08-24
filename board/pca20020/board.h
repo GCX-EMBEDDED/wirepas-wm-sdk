@@ -82,6 +82,15 @@ SXIO15   SENSE_LED_B            Blue color of the color sensor support LED
 // Active low polarity for LEDs
 #define BOARD_LED_ACTIVE_LOW            true
 
+// List of GPIO pins for buttons on the board: Button 1 
+#define BOARD_BUTTON_PIN_LIST           {11}
+
+// Active low polarity for buttons
+#define BOARD_BUTTON_ACTIVE_LOW         true
+
+// Active internal pull-up for buttons
+#define BOARD_BUTTON_INTERNAL_PULL      true
+
 // The board supports DCDC (#define BOARD_SUPPORT_DCDC)
 // Since SDK v1.2 (bootloader > v7) this option has been move to
 // board/<board_name>/config.mk.
