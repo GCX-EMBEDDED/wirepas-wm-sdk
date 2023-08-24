@@ -353,7 +353,12 @@ static app_lib_data_send_res_e send_uplink_msg(message_id_e id,
  * @return  next task execution time moment.
  */
 static uint32_t task_send_periodic_msg(void)
-{
+{   
+    temperature_t temperature =  get_temperature();
+    LOG(LVL_DEBUG,"Temperature in app.c: %d.%d C", temperature.integer, temperature.decimal);
+    humidity_t humid = get_humidity();
+    LOG(LVL_DEBUG,"Relative Humidty in app.c: %d%%", humid);
+
     static uint32_t counter_value = 0;
     payload_periodic_t payload; /* Message payload data. */
 
@@ -442,10 +447,10 @@ static void button_pressed_handler(uint8_t button_id, button_event_e event)
     // App_Scheduler_addTask_execTime(task_send_button_pressed_msg,
     //                                APP_SCHEDULER_SCHEDULE_ASAP,
     //                                TASK_EXEC_TIME_US_SEND_BUTTON_PRESSED_MSG);
-    App_Scheduler_addTask_execTime(get_temperature,
+    App_Scheduler_addTask_execTime(update_temperature,
                                    APP_SCHEDULER_SCHEDULE_ASAP,
                                    1000u);
-    App_Scheduler_addTask_execTime(get_humidity,
+    App_Scheduler_addTask_execTime(update_humidity,
                                    APP_SCHEDULER_SCHEDULE_ASAP,
                                    1000u);                                 
 }
