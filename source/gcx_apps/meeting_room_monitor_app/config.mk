@@ -14,7 +14,7 @@ default_network_channel ?= 2
 #
 
 # Define a specific application area_id
-app_specific_area_id=0x83744C
+app_specific_area_id=0x72754B
 
 # App version
 app_major=2
