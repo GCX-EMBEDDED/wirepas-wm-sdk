@@ -1,16 +1,6 @@
-/* Copyright 2017 Wirepas Ltd. All Rights Reserved.
- *
- * See file LICENSE.txt for full license details.
- */
-
 /* Copyright (c) 2023 grandcentrix GmbH
  *
  * SPDX-License-Identifier: MIT
- */
-
-/*
- * \file    app.c
- * \brief   Meeting-Room Monitor App
  */
 
 #include <stdlib.h>
@@ -34,9 +24,6 @@
 /** Time needed to execute the periodic work, in us */
 #define EXECUTION_TIME_US 500
 
-/** Endpoint to change the sending period value */
-#define SET_PERIOD_EP  10
-
 #define DATA_EP 1
 
 /** Period to send measurements, in ms */
@@ -52,10 +39,9 @@ typedef struct __attribute__((packed))
  * @brief   Task to send periodic message.
  * @return  next period
  */
-
 static uint32_t send_data_task(void)
 {
-    static uint32_t id = 0; // Value to send
+    static uint8_t id = 0; // Value to send
 
     // Create a data packet to send
     app_lib_data_to_send_t data_to_send;
