@@ -18,7 +18,7 @@
 #include "debug_log.h"
 
 /** Period to send data */
-#define DEFAULT_PERIOD_S    10
+#define DEFAULT_PERIOD_S    60
 #define DEFAULT_PERIOD_MS   (DEFAULT_PERIOD_S*1000)
 
 /** Time needed to execute the periodic work, in us */
@@ -42,7 +42,7 @@ typedef struct __attribute__((packed))
 static uint32_t send_data_task(void)
 {
     static uint8_t id = 0; // Value to send
-    
+
     // Create a data packet to send
     app_lib_data_to_send_t data_to_send;
     data_to_send.bytes = (const uint8_t *) &id;
