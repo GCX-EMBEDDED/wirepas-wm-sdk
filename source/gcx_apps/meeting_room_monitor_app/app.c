@@ -42,7 +42,7 @@ typedef struct __attribute__((packed))
 static uint32_t send_data_task(void)
 {
     static uint8_t id = 0; // Value to send
-
+    
     // Create a data packet to send
     app_lib_data_to_send_t data_to_send;
     data_to_send.bytes = (const uint8_t *) &id;
@@ -86,6 +86,14 @@ void App_init(const app_global_functions_t * functions)
         // It should not happen except if one of the config value is invalid
         return;
     }
+
+        /*
+     * Set node operating mode (i.e low-energy or low-latency with autorole)
+     * Default is low-energy.
+     */
+    #ifdef ENABLE_LOW_LATENCY_MODE
+    lib_settings->setNodeRole(APP_LIB_SETTINGS_ROLE_AUTOROLE_LL);
+    #endif
 
     // Set a periodic callback to be called after DEFAULT_PERIOD_MS
     period_ms = DEFAULT_PERIOD_MS;
