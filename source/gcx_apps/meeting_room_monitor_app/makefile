@@ -6,3 +6,6 @@ APP_PRINTING=yes
 # Use App Scheduler and configure it
 APP_SCHEDULER=yes
 APP_SCHEDULER_TASKS=1
+
+# And HAL voltage measurement examples
+HAL_VOLTAGE=yes

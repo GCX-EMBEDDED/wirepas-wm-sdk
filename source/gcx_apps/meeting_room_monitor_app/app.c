@@ -9,7 +9,7 @@
 #include "node_configuration.h"
 #include "shared_data.h"
 #include "app_scheduler.h"
-
+#include "hal_api.h"
 
 #define DEBUG_LOG_MODULE_NAME "MEETING_ROOM_MONITOR_APP"
 /** To activate logs, configure the following line with "LVL_INFO". */
@@ -17,9 +17,11 @@
 
 #include "debug_log.h"
 
+#define MSG_ID_READING 0
+
 /** Period to send data */
-#define DEFAULT_PERIOD_S    60
-#define DEFAULT_PERIOD_MS   (DEFAULT_PERIOD_S*1000)
+#define DEFAULT_PERIOD_S 60
+#define DEFAULT_PERIOD_MS (DEFAULT_PERIOD_S * 1000)
 
 /** Time needed to execute the periodic work, in us */
 #define EXECUTION_TIME_US 500
@@ -42,15 +44,25 @@ typedef struct __attribute__((packed))
 static uint32_t send_data_task(void)
 {
     static uint8_t id = 0; // Value to send
+    static uint8_t buffer[4];
+
+    uint16_t voltage = Mcu_voltageGet();
+
+    LOG(LVL_DEBUG, "Battery voltage %lu mV", voltage);
+
+    buffer[0] = MSG_ID_READING;
+    buffer[1] = id;
+    buffer[2] = voltage;
+    buffer[3] = (voltage >> 8);
 
     // Create a data packet to send
     app_lib_data_to_send_t data_to_send;
-    data_to_send.bytes = (const uint8_t *) &id;
-    data_to_send.num_bytes = sizeof(id);
+    data_to_send.bytes = (const uint8_t *)buffer;
+    data_to_send.num_bytes = sizeof(buffer);
     data_to_send.dest_address = APP_ADDR_ANYSINK;
     data_to_send.src_endpoint = DATA_EP;
     data_to_send.dest_endpoint = DATA_EP;
-    data_to_send.qos = APP_LIB_DATA_QOS_HIGH;
+    data_to_send.qos = APP_LIB_DATA_QOS_NORMAL;
     data_to_send.delay = 0;
     data_to_send.flags = APP_LIB_DATA_SEND_FLAG_NONE;
     data_to_send.tracking_id = APP_LIB_DATA_NO_TRACKING_ID;
@@ -67,7 +79,6 @@ static uint32_t send_data_task(void)
     return period_ms;
 }
 
-
 /**
  * \brief   Initialization callback for application
  *
@@ -75,10 +86,11 @@ static uint32_t send_data_task(void)
  * stack is not yet running.
  *
  */
-void App_init(const app_global_functions_t * functions)
+void App_init(const app_global_functions_t *functions)
 {
     LOG_INIT();
     LOG(LVL_INFO, "App_init");
+
     // Basic configuration of the node with a unique node address
     if (configureNodeFromBuildParameters() != APP_RES_OK)
     {
@@ -87,13 +99,16 @@ void App_init(const app_global_functions_t * functions)
         return;
     }
 
-        /*
+    /*
      * Set node operating mode (i.e low-energy or low-latency with autorole)
      * Default is low-energy.
      */
-    #ifdef ENABLE_LOW_LATENCY_MODE
+#ifdef ENABLE_LOW_LATENCY_MODE
     lib_settings->setNodeRole(APP_LIB_SETTINGS_ROLE_AUTOROLE_LL);
-    #endif
+#endif
+
+    /* Initialize voltage measurement. */
+    Mcu_voltageInit();
 
     // Set a periodic callback to be called after DEFAULT_PERIOD_MS
     period_ms = DEFAULT_PERIOD_MS;
@@ -104,4 +119,3 @@ void App_init(const app_global_functions_t * functions)
     // Start the stack
     lib_state->startStack();
 }
-
