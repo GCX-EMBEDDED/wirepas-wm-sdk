@@ -93,5 +93,39 @@ include $(WP_LIB_PATH)dualmcu/waps/makefile
 include $(WP_LIB_PATH)dualmcu/drivers/makefile
 endif
 
+ifeq ($(thingy_52), yes)
+SRCS += $(WP_LIB_PATH)thingy_52/drv_sx1509.c
+SRCS += $(WP_LIB_PATH)thingy_52/drv_ext_gpio.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_drv_twi.c
+SRCS += $(WP_LIB_PATH)thingy_52/app_util_platform.c
+SRCS += $(WP_LIB_PATH)thingy_52/twi_manager.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_assert.c
+SRCS += $(WP_LIB_PATH)thingy_52/app_error.c
+SRCS += $(WP_LIB_PATH)thingy_52/app_error_weak.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_log_backend_serial.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_log_frontend.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_strerror.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_drv_common.c
+SRCS += $(WP_LIB_PATH)thingy_52/SEGGER_RTT.c
+SRCS += $(WP_LIB_PATH)thingy_52/drv_ext_light.c
+SRCS += $(WP_LIB_PATH)thingy_52/app_timer.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_saadc.c
+SRCS += $(WP_LIB_PATH)thingy_52/sx150x_led_drv_calc.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_drv_gpiote.c
+SRCS += $(WP_LIB_PATH)thingy_52/system_nrf52.c
+SRCS += $(WP_LIB_PATH)thingy_52/support_func.c
+SRCS += $(WP_LIB_PATH)thingy_52/softdevice_handler.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_nvic.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_drv_rng.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_queue.c
+SRCS += $(WP_LIB_PATH)thingy_52/m_ui.c
+SRCS += $(WP_LIB_PATH)thingy_52/app_scheduler.c
+SRCS += $(WP_LIB_PATH)thingy_52/drv_hts221.c
+SRCS += $(WP_LIB_PATH)thingy_52/drv_humidity_temperature.c
+SRCS += $(WP_LIB_PATH)thingy_52/m_environment.c
+INCLUDES += -I$(WP_LIB_PATH)thingy_52
+LDFLAGS += -lm
+endif
+
 SRCS += $(WP_LIB_PATH)libraries_init.c
 INCLUDES += -I$(WP_LIB_PATH)

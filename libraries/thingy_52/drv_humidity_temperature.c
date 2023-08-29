@@ -214,7 +214,7 @@ uint32_t drv_humidity_temperature_enable(void)
 }
 
 
-uint32_t drv_humidity_disable(void)
+uint32_t drv_humidity_temperature_disable(void)
 {
     uint32_t err_code;
 

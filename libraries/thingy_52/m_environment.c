@@ -56,9 +56,6 @@
  */
 #define APP_SCHEDULER_STOP_TASK     ((uint32_t)(-1))
 
-static bool        m_get_humidity                   = false;
-static bool        m_get_temperature                = false;
-
 env_config config_env_intervals;
 temperature_t temp;
 humidity_t humid;
@@ -104,13 +101,12 @@ static void drv_humidity_evt_handler(drv_humidity_temperature_evt_t event)
 
 uint32_t update_temperature(void)
 {
-   m_get_temperature = true;
+
    drv_humidity_temperature_enable();
-   drv_humidity_temperature_sample();
    float temperature = drv_humidity_temp_get();
    temperature_conv_data(temperature, &temp);
-   m_get_temperature = false;
-   drv_humidity_disable();
+   drv_humidity_temperature_sample();
+   drv_humidity_temperature_disable();
    return config_env_intervals.temperature_interval_ms;
 }
 
@@ -118,13 +114,11 @@ uint32_t update_temperature(void)
  */
 uint32_t update_humidity(void)
 {
-    m_get_humidity = true;
     drv_humidity_temperature_enable();
     drv_humidity_temperature_sample();
     uint16_t humidity = drv_humidity_get();
     humidity_conv_data(humidity, &humid);
-    m_get_humidity = false;
-    drv_humidity_disable();
+    drv_humidity_temperature_disable();
    return config_env_intervals.humidity_interval_ms;
 }
 

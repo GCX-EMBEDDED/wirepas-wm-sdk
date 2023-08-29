@@ -44,12 +44,19 @@
 #include "nrf_log_ctrl.h"
 /*lint -save -e14 */
 
+#define DEBUG_LOG_MODULE_NAME "NRF_APP_ERROR"
+/** To activate logs, configure the following line with "LVL_INFO". */
+#define DEBUG_LOG_MAX_LEVEL LVL_DEBUG
+
+#include "debug_log.h"
+
 /**
  * Function is implemented as weak so that it can be overwritten by custom application error handler
  * when needed.
  */
 __WEAK void app_error_fault_handler(uint32_t id, uint32_t pc, uint32_t info)
 {
+    LOG(LVL_DEBUG, "FATAL ERROR");
     NRF_LOG_ERROR("Fatal\r\n");
     NRF_LOG_FINAL_FLUSH();
     // On assert, the system can only recover with a reset.
