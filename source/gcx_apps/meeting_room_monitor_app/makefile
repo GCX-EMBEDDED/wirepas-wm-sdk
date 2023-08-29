@@ -9,3 +9,6 @@ APP_SCHEDULER_TASKS=1
 
 # And HAL voltage measurement examples
 HAL_VOLTAGE=yes
+
+# Use the thingy 52 libraries
+thingy_52=yes

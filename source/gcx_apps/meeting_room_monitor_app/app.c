@@ -11,6 +11,13 @@
 #include "app_scheduler.h"
 #include "hal_api.h"
 
+#include "app_util_platform.h"
+#include "nrf_delay.h"
+#include "twi_manager.h"
+#include "pca20020.h"
+
+#include "m_environment.h"
+
 #define DEBUG_LOG_MODULE_NAME "MEETING_ROOM_MONITOR_APP"
 /** To activate logs, configure the following line with "LVL_INFO". */
 #define DEBUG_LOG_MAX_LEVEL LVL_DEBUG
@@ -24,7 +31,7 @@
 #define DEFAULT_PERIOD_MS (DEFAULT_PERIOD_S * 1000)
 
 /** Time needed to execute the periodic work, in us */
-#define EXECUTION_TIME_US 500
+#define EXECUTION_TIME_US 1500
 
 #define DATA_EP 1
 
@@ -37,6 +44,9 @@ typedef struct __attribute__((packed))
     uint32_t period_ms;
 } payload_periodic_t;
 
+static const nrf_drv_twi_t     m_twi_sensors = NRF_DRV_TWI_INSTANCE(TWI_SENSOR_INSTANCE);
+static void board_init(void);
+
 /**
  * @brief   Task to send periodic message.
  * @return  next period
@@ -44,16 +54,21 @@ typedef struct __attribute__((packed))
 static uint32_t send_data_task(void)
 {
     static uint8_t id = 0; // Value to send
-    static uint8_t buffer[4];
+    static uint8_t buffer[6];
 
     uint16_t voltage = Mcu_voltageGet();
-
     LOG(LVL_DEBUG, "Battery voltage %lu mV", voltage);
 
+    update_temperature();
+    temperature_t temperature =  get_temperature();
+    LOG(LVL_DEBUG,"Temperature in app.c: %d.%d C", temperature.integer, temperature.decimal);
+    
     buffer[0] = MSG_ID_READING;
     buffer[1] = id;
     buffer[2] = voltage;
     buffer[3] = (voltage >> 8);
+    buffer[4] = temperature.integer;
+    buffer[5] = temperature.decimal;
 
     // Create a data packet to send
     app_lib_data_to_send_t data_to_send;
@@ -106,7 +121,12 @@ void App_init(const app_global_functions_t *functions)
 #ifdef ENABLE_LOW_LATENCY_MODE
     lib_settings->setNodeRole(APP_LIB_SETTINGS_ROLE_AUTOROLE_LL);
 #endif
-
+    board_init();
+    // APP_IRQ_PRIORITY_THREAD = 15
+    twi_manager_init(APP_IRQ_PRIORITY_THREAD);
+    m_environment_init_t     env_params;
+    env_params.p_twi_instance = &m_twi_sensors;
+    m_environment_init(&env_params);
     /* Initialize voltage measurement. */
     Mcu_voltageInit();
 
@@ -118,4 +138,31 @@ void App_init(const app_global_functions_t *functions)
 
     // Start the stack
     lib_state->startStack();
+}
+
+
+static void board_init(void)
+{
+    drv_ext_gpio_init_t ext_gpio_init;
+    static const nrf_drv_twi_config_t twi_config =
+    {
+        .scl                = TWI_SCL,
+        .sda                = TWI_SDA,
+        .frequency          = NRF_TWI_FREQ_400K,
+        .interrupt_priority = 3
+    };
+
+    static const drv_sx1509_cfg_t sx1509_cfg =
+    {
+        .twi_addr       = SX1509_ADDR,
+        .p_twi_instance = &m_twi_sensors,
+        .p_twi_cfg      = &twi_config
+    };
+
+    ext_gpio_init.p_cfg = &sx1509_cfg;
+    
+    support_func_configure_io_startup(&ext_gpio_init);
+
+
+    nrf_delay_ms(100);
 }
