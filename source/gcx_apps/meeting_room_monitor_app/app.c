@@ -15,7 +15,7 @@
 #include "nrf_delay.h"
 #include "twi_manager.h"
 #include "pca20020.h"
-
+#include "drv_gas_sensor.h"
 #include "m_environment.h"
 
 #define DEBUG_LOG_MODULE_NAME "MEETING_ROOM_MONITOR_APP"
@@ -55,7 +55,7 @@ bool calibrated_gas_sensor = false;
 static uint32_t send_data_task(void)
 {
     static uint8_t id = 0; // Value to send
-    static uint8_t buffer[6];
+    static uint8_t buffer[10];
 
     uint16_t voltage = Mcu_voltageGet();
     LOG(LVL_DEBUG, "Battery voltage %lu mV", voltage);
@@ -63,16 +63,8 @@ static uint32_t send_data_task(void)
     update_temperature();
     temperature_t temperature =  get_temperature();
 
-    if(calibrated_gas_sensor == false)
-    {
-    //float temperature = drv_humidity_temp_get();
-    //uint16_t humidity = drv_humidity_get();
-    //calibrate_gas_sensor(humidity, 25);
-    gas_start();
-    calibrated_gas_sensor = true;
-    }
-    get_gas_sensor_values();
-    //get_gas_sensor_data();
+    drv_ccs811_alg_result_t gas_values;
+    gas_values = get_gas_sensor_values();
 
     buffer[0] = MSG_ID_READING;
     buffer[1] = id;
@@ -80,7 +72,11 @@ static uint32_t send_data_task(void)
     buffer[3] = (voltage >> 8);
     buffer[4] = temperature.integer;
     buffer[5] = temperature.decimal;
-
+    buffer[6] = gas_values.ec02_ppm;
+    buffer[7] = (gas_values.ec02_ppm >> 8);
+    buffer[8] = gas_values.tvoc_ppb;
+    buffer[9] = (gas_values.tvoc_ppb >> 8);
+ 
     // Create a data packet to send
     app_lib_data_to_send_t data_to_send;
     data_to_send.bytes = (const uint8_t *)buffer;
@@ -146,6 +142,15 @@ void App_init(const app_global_functions_t *functions)
     App_Scheduler_addTask_execTime(send_data_task,
                                    APP_SCHEDULER_SCHEDULE_ASAP,
                                    EXECUTION_TIME_US);
+
+    if(calibrated_gas_sensor == false)
+    {
+    //float temperature = drv_humidity_temp_get();
+    //uint16_t humidity = drv_humidity_get();
+    //calibrate_gas_sensor(humidity, 25);
+    gas_start();
+    calibrated_gas_sensor = true;
+    }
 
     // Start the stack
     lib_state->startStack();
