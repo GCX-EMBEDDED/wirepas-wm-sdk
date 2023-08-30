@@ -123,6 +123,8 @@ SRCS += $(WP_LIB_PATH)thingy_52/app_scheduler.c
 SRCS += $(WP_LIB_PATH)thingy_52/drv_hts221.c
 SRCS += $(WP_LIB_PATH)thingy_52/drv_humidity_temperature.c
 SRCS += $(WP_LIB_PATH)thingy_52/m_environment.c
+SRCS += $(WP_LIB_PATH)thingy_52/drv_ccs811.c
+SRCS += $(WP_LIB_PATH)thingy_52/drv_gas_sensor.c
 INCLUDES += -I$(WP_LIB_PATH)thingy_52
 LDFLAGS += -lm
 endif
