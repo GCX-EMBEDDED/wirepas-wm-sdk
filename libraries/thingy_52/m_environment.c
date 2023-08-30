@@ -199,7 +199,7 @@ static uint32_t gas_sensor_init(const nrf_drv_twi_t * p_twi_instance)
 {
    uint32_t err_code;
    drv_gas_sensor_mode_t mode;
-   mode = DRV_GAS_SENSOR_MODE_60S;
+   mode = DRV_GAS_SENSOR_MODE_10S;
    err_code = drv_gas_sensor_start(mode);
    RETURN_IF_ERROR(err_code);
 }
