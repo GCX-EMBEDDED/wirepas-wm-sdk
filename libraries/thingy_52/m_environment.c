@@ -38,8 +38,11 @@
 
 #include "m_environment.h"
 #include <string.h>
+#include <inttypes.h>   // For PRIu32, PRIu8
 #include "app_util_platform.h"
 #include "drv_humidity_temperature.h"
+#include "drv_gas_sensor.h"
+#include "drv_ccs811.h"
 #include "app_timer.h"
 #include "pca20020.h"
 #include "nrf_delay.h"
@@ -55,6 +58,8 @@
  * \brief   Value to return from task to remove it from the scheduler
  */
 #define APP_SCHEDULER_STOP_TASK     ((uint32_t)(-1))
+
+
 
 env_config config_env_intervals;
 temperature_t temp;
@@ -96,8 +101,24 @@ static void humidity_conv_data(uint8_t humid, humidity_t * p_out_humid)
 static void drv_humidity_evt_handler(drv_humidity_temperature_evt_t event)
 {  
    LOG(LVL_DEBUG,"drv_humidity_evt_handler has been called");
+   float temperature = drv_humidity_temp_get();
+   uint16_t humidity = drv_humidity_get();
+   calibrate_gas_sensor(humidity, temperature);
 }
 
+/**@brief Gas sensor data handler.
+ */
+/**@brief Gas sensor data handler.
+ */
+static void drv_gas_data_handler(drv_gas_sensor_data_t const * p_data)
+{  
+   LOG(LVL_DEBUG,"gas_data_handler: Pointer is NULL");
+    if (p_data != NULL)
+    {
+        LOG(LVL_DEBUG,"gas_data_handler eCO2:, %d, - TVOC:, %d,\r\n", p_data->ec02_ppm,
+                                                                      p_data->tvoc_ppb);
+    }
+}
 
 uint32_t update_temperature(void)
 {
@@ -106,7 +127,7 @@ uint32_t update_temperature(void)
    float temperature = drv_humidity_temp_get();
    temperature_conv_data(temperature, &temp);
    drv_humidity_temperature_sample();
-   drv_humidity_temperature_disable();
+   //drv_humidity_temperature_disable();
    return config_env_intervals.temperature_interval_ms;
 }
 
@@ -150,6 +171,67 @@ static uint32_t humidity_sensor_init(const nrf_drv_twi_t * p_twi_instance)
     return err_code;
 }
 
+static uint32_t gas_sensor_init(const nrf_drv_twi_t * p_twi_instance)
+{
+    uint32_t       err_code;
+    drv_gas_init_t init_params;
+
+    static const nrf_drv_twi_config_t twi_config =
+    {
+        .scl                = TWI_SCL,
+        .sda                = TWI_SDA,
+        .frequency          = NRF_TWI_FREQ_400K,
+        .interrupt_priority = APP_IRQ_PRIORITY_LOW
+    };
+
+    init_params.p_twi_instance = p_twi_instance;
+    init_params.p_twi_cfg      = &twi_config;
+    init_params.twi_addr       = CCS811_ADDR;
+    init_params.data_handler   = drv_gas_data_handler;
+
+    err_code = drv_gas_sensor_init(&init_params);
+    RETURN_IF_ERROR(err_code);
+
+    return NRF_SUCCESS;
+}
+
+ uint32_t gas_start(void)
+{
+   uint32_t err_code;
+   drv_gas_sensor_mode_t mode;
+   mode = DRV_GAS_SENSOR_MODE_60S;
+   err_code = drv_gas_sensor_start(mode);
+   RETURN_IF_ERROR(err_code);
+}
+
+ uint32_t gas_stop(void)
+{
+    uint32_t err_code;
+
+        //err_code = humidity_temp_stop_for_gas_calibration();
+        //RETURN_IF_ERROR(err_code);
+    return drv_gas_sensor_stop();
+}
+
+/**@brief Sends the sampled humidity and temperature to the gas sensor for calibration.
+ *
+ * @note Not currently used.
+ */
+uint32_t calibrate_gas_sensor(uint16_t humid, float temp)
+{
+    uint32_t err_code;
+        uint16_t rh_ppt    = humid * 10;
+        int32_t temp_mdeg = (int32_t)(temp * 1000.0f);
+
+        LOG(LVL_DEBUG,"Calibrating gas sensor: humid out %d [ppt], temp out: %d [mdeg C]\r\n", rh_ppt, temp_mdeg);
+
+        err_code = drv_gas_sensor_calibrate_humid_temp(rh_ppt, temp_mdeg);
+        LOG(LVL_DEBUG,"drv_gas_sensor_calibrate_humid_temp %" PRIu32 "\n",err_code);
+        //RETURN_IF_ERROR(err_code);
+
+        return NRF_SUCCESS;
+}
+
 uint32_t m_environment_init(m_environment_init_t * p_params)
 {  
     uint32_t err_code;
@@ -161,5 +243,8 @@ uint32_t m_environment_init(m_environment_init_t * p_params)
     /**@brief Init drivers */
     err_code = humidity_sensor_init(p_params->p_twi_instance);
     APP_ERROR_CHECK(err_code);
+    err_code = gas_sensor_init(p_params->p_twi_instance);
+    APP_ERROR_CHECK(err_code);
+
     return NRF_SUCCESS;
 }

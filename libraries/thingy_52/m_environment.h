@@ -81,6 +81,7 @@ uint32_t update_humidity(void);
 temperature_t get_temperature(void);
 
 uint8_t get_humidity(void);
+
 /**@brief Function for initializing the environment module.
  *
  * @param[in] p_handle  Pointer to the location to store the service handle.
@@ -89,6 +90,12 @@ uint8_t get_humidity(void);
  * @retval NRF_SUCCESS  If initialization was successful.
  */
 uint32_t m_environment_init(m_environment_init_t * p_params);
+
+uint32_t calibrate_gas_sensor(uint16_t humid, float temp);
+
+uint32_t gas_start(void);
+
+uint32_t gas_stop(void);
 
 #endif
 

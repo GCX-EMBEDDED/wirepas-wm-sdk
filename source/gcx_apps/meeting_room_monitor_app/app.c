@@ -31,7 +31,7 @@
 #define DEFAULT_PERIOD_MS (DEFAULT_PERIOD_S * 1000)
 
 /** Time needed to execute the periodic work, in us */
-#define EXECUTION_TIME_US 1500
+#define EXECUTION_TIME_US 2500
 
 #define DATA_EP 1
 
@@ -46,6 +46,7 @@ typedef struct __attribute__((packed))
 
 static const nrf_drv_twi_t     m_twi_sensors = NRF_DRV_TWI_INSTANCE(TWI_SENSOR_INSTANCE);
 static void board_init(void);
+bool calibrated_gas_sensor = false;
 
 /**
  * @brief   Task to send periodic message.
@@ -61,8 +62,18 @@ static uint32_t send_data_task(void)
 
     update_temperature();
     temperature_t temperature =  get_temperature();
-    LOG(LVL_DEBUG,"Temperature in app.c: %d.%d C", temperature.integer, temperature.decimal);
-    
+
+    if(calibrated_gas_sensor == false)
+    {
+    //float temperature = drv_humidity_temp_get();
+    //uint16_t humidity = drv_humidity_get();
+    //calibrate_gas_sensor(humidity, 25);
+    gas_start();
+    calibrated_gas_sensor = true;
+    }
+    get_gas_sensor_values();
+    //get_gas_sensor_data();
+
     buffer[0] = MSG_ID_READING;
     buffer[1] = id;
     buffer[2] = voltage;
