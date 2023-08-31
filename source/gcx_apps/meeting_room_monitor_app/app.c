@@ -17,6 +17,7 @@
 #include "pca20020.h"
 #include "drv_gas_sensor.h"
 #include "m_environment.h"
+#include "battery_measurement.h"
 
 #define DEBUG_LOG_MODULE_NAME "MEETING_ROOM_MONITOR_APP"
 /** To activate logs, configure the following line with "LVL_INFO". */
@@ -57,7 +58,7 @@ static uint32_t send_data_task(void)
     static uint8_t id = 0; // Value to send
     static uint8_t buffer[8];
 
-    uint16_t voltage = Mcu_voltageGet();
+    uint16_t voltage = battery_measurement_get();
     LOG(LVL_DEBUG, "Battery voltage %lu mV", voltage);
 
     update_temperature();
@@ -134,7 +135,7 @@ void App_init(const app_global_functions_t *functions)
     env_params.p_twi_instance = &m_twi_sensors;
     m_environment_init(&env_params);
     /* Initialize voltage measurement. */
-    Mcu_voltageInit();
+    battery_measurement_init();
 
     // Set a periodic callback to be called after DEFAULT_PERIOD_MS
     period_ms = DEFAULT_PERIOD_MS;
