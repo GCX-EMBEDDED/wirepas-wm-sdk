@@ -55,7 +55,7 @@ bool calibrated_gas_sensor = false;
 static uint32_t send_data_task(void)
 {
     static uint8_t id = 0; // Value to send
-    static uint8_t buffer[10];
+    static uint8_t buffer[8];
 
     uint16_t voltage = Mcu_voltageGet();
     LOG(LVL_DEBUG, "Battery voltage %lu mV", voltage);
@@ -74,8 +74,7 @@ static uint32_t send_data_task(void)
     buffer[5] = temperature.decimal;
     buffer[6] = gas_values.ec02_ppm;
     buffer[7] = (gas_values.ec02_ppm >> 8);
-    buffer[8] = gas_values.tvoc_ppb;
-    buffer[9] = (gas_values.tvoc_ppb >> 8);
+
  
     // Create a data packet to send
     app_lib_data_to_send_t data_to_send;
