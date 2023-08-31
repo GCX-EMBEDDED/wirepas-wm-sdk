@@ -40,6 +40,8 @@
 #ifndef APP_ERROR_WEAK_H__
 #define APP_ERROR_WEAK_H__
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C"
 {
