@@ -125,6 +125,8 @@ SRCS += $(WP_LIB_PATH)thingy_52/drv_humidity_temperature.c
 SRCS += $(WP_LIB_PATH)thingy_52/m_environment.c
 SRCS += $(WP_LIB_PATH)thingy_52/drv_ccs811.c
 SRCS += $(WP_LIB_PATH)thingy_52/drv_gas_sensor.c
+SRCS += $(WP_LIB_PATH)thingy_52/nrf_saadc.c
+SRCS += $(WP_LIB_PATH)thingy_52/battery_measurement.c
 INCLUDES += -I$(WP_LIB_PATH)thingy_52
 LDFLAGS += -lm
 endif

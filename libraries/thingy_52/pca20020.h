@@ -518,6 +518,7 @@ DRV_EXT_LIGHT_DEF(my_led_1);
     },                                   \
 };
 
+#define APP_TIMER_PRESCALER             0                                           /**< Value of the RTC1 PRESCALER register. */
 #define BATT_MEAS_INTERVAL_MS            5000 // Measurement interval [ms].
 #define BATT_MEAS_LOW_BATT_LIMIT_MV      3100 // Cutoff voltage [mV].
 #define BATT_MEAS_FULL_BATT_LIMIT_MV     4190 // Full charge definition [mV].
