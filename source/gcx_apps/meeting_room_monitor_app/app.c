@@ -6,17 +6,17 @@
 #include <stdlib.h>
 
 #include "api.h"
-#include "node_configuration.h"
-#include "shared_data.h"
 #include "app_scheduler.h"
 #include "hal_api.h"
+#include "node_configuration.h"
+#include "shared_data.h"
 
 #include "app_util_platform.h"
-#include "nrf_delay.h"
-#include "twi_manager.h"
-#include "pca20020.h"
 #include "drv_gas_sensor.h"
 #include "m_environment.h"
+#include "nrf_delay.h"
+#include "pca20020.h"
+#include "twi_manager.h"
 
 #define DEBUG_LOG_MODULE_NAME "MEETING_ROOM_MONITOR_APP"
 /** To activate logs, configure the following line with "LVL_INFO". */
@@ -44,7 +44,7 @@ typedef struct __attribute__((packed))
     uint32_t period_ms;
 } payload_periodic_t;
 
-static const nrf_drv_twi_t     m_twi_sensors = NRF_DRV_TWI_INSTANCE(TWI_SENSOR_INSTANCE);
+static const nrf_drv_twi_t m_twi_sensors = NRF_DRV_TWI_INSTANCE(TWI_SENSOR_INSTANCE);
 static void board_init(void);
 bool calibrated_gas_sensor = false;
 
@@ -61,7 +61,7 @@ static uint32_t send_data_task(void)
     LOG(LVL_DEBUG, "Battery voltage %lu mV", voltage);
 
     update_temperature();
-    temperature_t temperature =  get_temperature();
+    temperature_t temperature = get_temperature();
 
     drv_ccs811_alg_result_t gas_values;
     gas_values = get_gas_sensor_values();
@@ -76,7 +76,7 @@ static uint32_t send_data_task(void)
     buffer[7] = (gas_values.ec02_ppm >> 8);
     buffer[8] = gas_values.tvoc_ppb;
     buffer[9] = (gas_values.tvoc_ppb >> 8);
- 
+
     // Create a data packet to send
     app_lib_data_to_send_t data_to_send;
     data_to_send.bytes = (const uint8_t *)buffer;
@@ -131,7 +131,7 @@ void App_init(const app_global_functions_t *functions)
     board_init();
     // APP_IRQ_PRIORITY_THREAD = 15
     twi_manager_init(APP_IRQ_PRIORITY_THREAD);
-    m_environment_init_t     env_params;
+    m_environment_init_t env_params;
     env_params.p_twi_instance = &m_twi_sensors;
     m_environment_init(&env_params);
     /* Initialize voltage measurement. */
@@ -139,46 +139,33 @@ void App_init(const app_global_functions_t *functions)
 
     // Set a periodic callback to be called after DEFAULT_PERIOD_MS
     period_ms = DEFAULT_PERIOD_MS;
-    App_Scheduler_addTask_execTime(send_data_task,
-                                   APP_SCHEDULER_SCHEDULE_ASAP,
-                                   EXECUTION_TIME_US);
+    App_Scheduler_addTask_execTime(send_data_task, APP_SCHEDULER_SCHEDULE_ASAP, EXECUTION_TIME_US);
 
-    if(calibrated_gas_sensor == false)
+    if (calibrated_gas_sensor == false)
     {
-    //float temperature = drv_humidity_temp_get();
-    //uint16_t humidity = drv_humidity_get();
-    //calibrate_gas_sensor(humidity, 25);
-    gas_start();
-    calibrated_gas_sensor = true;
+        // float temperature = drv_humidity_temp_get();
+        // uint16_t humidity = drv_humidity_get();
+        // calibrate_gas_sensor(humidity, 25);
+        gas_start();
+        calibrated_gas_sensor = true;
     }
 
     // Start the stack
     lib_state->startStack();
 }
 
-
 static void board_init(void)
 {
     drv_ext_gpio_init_t ext_gpio_init;
-    static const nrf_drv_twi_config_t twi_config =
-    {
-        .scl                = TWI_SCL,
-        .sda                = TWI_SDA,
-        .frequency          = NRF_TWI_FREQ_400K,
-        .interrupt_priority = 3
-    };
+    static const nrf_drv_twi_config_t twi_config = {
+        .scl = TWI_SCL, .sda = TWI_SDA, .frequency = NRF_TWI_FREQ_400K, .interrupt_priority = 3};
 
-    static const drv_sx1509_cfg_t sx1509_cfg =
-    {
-        .twi_addr       = SX1509_ADDR,
-        .p_twi_instance = &m_twi_sensors,
-        .p_twi_cfg      = &twi_config
-    };
+    static const drv_sx1509_cfg_t sx1509_cfg = {
+        .twi_addr = SX1509_ADDR, .p_twi_instance = &m_twi_sensors, .p_twi_cfg = &twi_config};
 
     ext_gpio_init.p_cfg = &sx1509_cfg;
-    
-    support_func_configure_io_startup(&ext_gpio_init);
 
+    support_func_configure_io_startup(&ext_gpio_init);
 
     nrf_delay_ms(100);
 }

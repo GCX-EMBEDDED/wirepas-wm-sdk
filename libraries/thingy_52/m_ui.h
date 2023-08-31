@@ -36,7 +36,7 @@
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /** @file UI module
+/** @file UI module
  *
  * @defgroup m_ui User interface
  * @{
@@ -51,34 +51,33 @@
 #include "app_error.h"
 #include "nrf_drv_twi.h"
 
-#define DEFAULT_LED_INTENSITY_PERCENT     20    ///< Default LED intensity [percent].
-#define DEFAULT_LED_ON_TIME_MS            35    ///< LED on duration [ms].
-#define DEFAULT_LED_OFF_TIME_MS         3500    ///< Time LED is off between cycles [ms].
-#define DEFAULT_LED_FADE_IN_TIME        2000    ///< LED fade in time [ms].
-#define DEFAULT_LED_FADE_OUT_TIME        500    ///< LED fade out time [ms].
+#define DEFAULT_LED_INTENSITY_PERCENT 20 ///< Default LED intensity [percent].
+#define DEFAULT_LED_ON_TIME_MS 35        ///< LED on duration [ms].
+#define DEFAULT_LED_OFF_TIME_MS 3500     ///< Time LED is off between cycles [ms].
+#define DEFAULT_LED_FADE_IN_TIME 2000    ///< LED fade in time [ms].
+#define DEFAULT_LED_FADE_OUT_TIME 500    ///< LED fade out time [ms].
 
 /** @brief User interface module status return codes.
  */
 enum
 {
-    M_IU_STATUS_CODE_SUCCESS = NRF_SUCCESS,                 ///< Successful.
-    M_IU_STATUS_CODE_INVALID_PARAM,                         ///< Invalid parameters supplied.
+    M_IU_STATUS_CODE_SUCCESS = NRF_SUCCESS, ///< Successful.
+    M_IU_STATUS_CODE_INVALID_PARAM,         ///< Invalid parameters supplied.
 };
-
 
 /** @brief Predefined events linked to corresponding LED configurations.
  */
 typedef enum
 {
     M_UI_ERROR
-}ui_led_events;
+} ui_led_events;
 
 /** @brief TWI configuraion.
  */
 typedef struct
 {
-    nrf_drv_twi_t         const * p_twi_instance;
-}m_ui_init_t;
+    nrf_drv_twi_t const *p_twi_instance;
+} m_ui_init_t;
 
 /**@brief Function for initializing all UI components (Buttons and LEDs).
  *
@@ -88,7 +87,7 @@ typedef struct
  * @retval NRF_ERROR_NULL   NULL pointer supplied.
  * @retval Other codes from the underlying drivers.
  */
-ret_code_t m_ui_init(m_ui_init_t * p_params);
+ret_code_t m_ui_init(m_ui_init_t *p_params);
 
 /**@brief Function for setting the RGB value of an LED.
  *

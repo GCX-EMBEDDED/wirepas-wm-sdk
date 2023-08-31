@@ -48,9 +48,9 @@
 #ifndef __DRV_GAS_SENSOR_H__
 #define __DRV_GAS_SENSOR_H__
 
-#include "nrf_drv_twi.h"
 #include "drv_ccs811.h"
 #include "drv_ccs811_bitfields.h"
+#include "nrf_drv_twi.h"
 #include "sdk_errors.h"
 
 /**@brief Struct for holding the measurement results.
@@ -69,18 +69,17 @@ typedef enum
 
 /**@brief Gas sensor driver event handler callback type.
  */
-typedef void (*drv_gas_sensor_data_handler_t)(drv_gas_sensor_data_t const * p_evt);
+typedef void (*drv_gas_sensor_data_handler_t)(drv_gas_sensor_data_t const *p_evt);
 
 /**@brief Gas sensor init struct.
  */
 typedef struct
 {
-    nrf_drv_twi_t         const * p_twi_instance;   ///< The TWI instance.
-    nrf_drv_twi_config_t  const * p_twi_cfg;        ///< TWI configuraion.
-    uint8_t                       twi_addr;         ///< TWI address on bus.
-    drv_gas_sensor_data_handler_t data_handler;     ///< Handler to be called when data capture has finished.
+    nrf_drv_twi_t const *p_twi_instance;        ///< The TWI instance.
+    nrf_drv_twi_config_t const *p_twi_cfg;      ///< TWI configuraion.
+    uint8_t twi_addr;                           ///< TWI address on bus.
+    drv_gas_sensor_data_handler_t data_handler; ///< Handler to be called when data capture has finished.
 } drv_gas_init_t;
-
 
 /**@brief Function for calibrating the gas sensor based on the ambient humidity and temperature.
  *
@@ -92,7 +91,6 @@ typedef struct
  */
 ret_code_t drv_gas_sensor_calibrate_humid_temp(uint16_t rh_ppth, int32_t temp_mdeg);
 
-
 /**@brief Function for reading a baseline value from the gas sensor.
  *
  * @param[out] p_baseline   Baseline value read from the sensor.
@@ -100,7 +98,7 @@ ret_code_t drv_gas_sensor_calibrate_humid_temp(uint16_t rh_ppth, int32_t temp_md
  * @return NRF_SUCCESS  If the call was successful.
  * @return Other codes from the underlying drivers.
  */
-ret_code_t drv_gas_sensor_baseline_get(uint16_t * p_baseline);
+ret_code_t drv_gas_sensor_baseline_get(uint16_t *p_baseline);
 
 /**@brief Function for writing a baseline value to the gas sensor.
  *
@@ -111,7 +109,6 @@ ret_code_t drv_gas_sensor_baseline_get(uint16_t * p_baseline);
  */
 ret_code_t drv_gas_sensor_baseline_set(uint16_t baseline);
 
-
 /**@brief Function for getting a baseline value from the gas sensor.
  *
  * @param[out] p_current_selected   The current through the sensor [uA] (0 to 63 uA).
@@ -120,7 +117,7 @@ ret_code_t drv_gas_sensor_baseline_set(uint16_t baseline);
  * @return NRF_SUCCESS  If the call was successful.
  * @return Other codes from the underlying drivers.
  */
-ret_code_t drv_gas_sensor_raw_data_get(uint8_t * p_current_selected, uint16_t * p_raw_adc_reading);
+ret_code_t drv_gas_sensor_raw_data_get(uint8_t *p_current_selected, uint16_t *p_raw_adc_reading);
 
 /**@brief Function for starting data acquisition from the the gas sensor.
  *
@@ -148,7 +145,7 @@ ret_code_t drv_gas_sensor_stop(void);
  * @return NRF_SUCCESS  If the call was successful.
  * @return Other codes from the underlying drivers.
  */
-ret_code_t drv_gas_sensor_init(drv_gas_init_t * p_init);
+ret_code_t drv_gas_sensor_init(drv_gas_init_t *p_init);
 
 /**@brief Function for getting the results of eCO2 and TVOC from the gas sensor.
  * @return drv_ccs811_alg_result_descr_t struct that contains eCO2 and TVOC values.

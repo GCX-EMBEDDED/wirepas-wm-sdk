@@ -39,8 +39,8 @@
 #ifndef __TWI_MANAGER_H__
 #define __TWI_MANAGER_H__
 
-#include "nrf_drv_twi.h"
 #include "app_util_platform.h"
+#include "nrf_drv_twi.h"
 
 /**@brief Init TWI manager
  *
@@ -59,29 +59,27 @@ uint32_t twi_manager_init(app_irq_priority_t context_limit);
  *
  * @return NRF_SUCCESS upon success.
  */
-uint32_t twi_manager_request(nrf_drv_twi_t const *        p_instance,
-                             nrf_drv_twi_config_t const * p_config,
-                             nrf_drv_twi_evt_handler_t    event_handler,
-                             void *                       p_context);
+uint32_t twi_manager_request(nrf_drv_twi_t const *p_instance, nrf_drv_twi_config_t const *p_config,
+                             nrf_drv_twi_evt_handler_t event_handler, void *p_context);
 
 /**@brief Wrapper for TWI driver uninit.
-*
-* @param[in] p_instance     pointer to TWI instance.
-*
-* @return NRF_SUCCESS upon success.
-*/
-uint32_t twi_manager_release(nrf_drv_twi_t const * p_instance);
+ *
+ * @param[in] p_instance     pointer to TWI instance.
+ *
+ * @return NRF_SUCCESS upon success.
+ */
+uint32_t twi_manager_release(nrf_drv_twi_t const *p_instance);
 
 /**@brief Function for getting number of TWI collisions.
-*
-* @return Number of collisions.
-*/
+ *
+ * @return Number of collisions.
+ */
 uint32_t twi_manager_collision_get(void);
 
 /**@brief Function for resetting the collision counter.
-*
-* @return NRF_SUCCESS upon success.
-*/
+ *
+ * @return NRF_SUCCESS upon success.
+ */
 uint32_t twi_manager_collision_reset(void);
 
 #endif

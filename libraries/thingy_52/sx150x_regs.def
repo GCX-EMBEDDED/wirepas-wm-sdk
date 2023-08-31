@@ -66,7 +66,7 @@ r|EventStatus|Event status register - I/O
 		v|None|0|No event has occured on this IO
 		v|Triggered|1|An event has occured on this IO (an edge as configured in relevant RegSense register occured)
 r|LevelShifter|Level shifter register 
-	f|Mode[15..8]|n|2|LED Driver mode for Bank B ‘s fading capable IOs (IO15-12)  
+	f|Mode[15..8]|n|2|LED Driver mode for Bank B ï¿½s fading capable IOs (IO15-12)  
 		v|Off|0|Level shifter mode for IO
 		v|AB|1|Sensitive to rising edge
 		v|BA|2|Sensitive to falling edge
@@ -75,7 +75,7 @@ r|Clock|Clock management register
 		v|Off|0|LED driver, keypad engine and debounce features are disabled. 
 		v|OscIn|1|External clock input (OSCIN)
 		v|Int2MHz|1|Internal 2MHz oscillator
-	f|OSCIODIR|4|1|OSCIO pin function (Cf. §4.8)    
+	f|OSCIODIR|4|1|OSCIO pin function (Cf. ï¿½4.8)    
 		v|Input|0|OSCIO is an input (OSCIN)
 		v|Output|1|OSCIO is an output (OSCOUT)
 	f|Freq|0|4|Frequency of the signal output on OSCOUT pin, fOSCOUT = fOSC/(2^(RegClock[3:0]-1))
@@ -87,16 +87,16 @@ r|Misc|Miscellaneous device settings register
 		v|Logarithmic|1|Sensitive to rising edge
 	f|ClkX|4|3|Frequency of the LED Driver clock ClkX of all IOs  
 		v|Off|0|LED driver functionality is disabled for all IOs, else fOSC/(2^(RegMisc[6:4]-1))
-	f|DrvMode|3|1|LED Driver mode for Bank A ‘s fading capable IOs (IO7-4)    
+	f|DrvMode|3|1|LED Driver mode for Bank A ï¿½s fading capable IOs (IO7-4)    
 		v|Linear|0|Level shifter mode for IO
 		v|Logarithmic|1|Sensitive to rising edge
-	f|Func|2|1|NRESET pin function when externally forced low (Cf. §4.4.1 and §4.9.5)   
+	f|Func|2|1|NRESET pin function when externally forced low (Cf. ï¿½4.4.1 and ï¿½4.9.5)   
 		v|EqPOR|0|Equivalent to POR 
 		v|Lmited|1|Reset PWM/Blink/Fade counters (not user programmed values) This bit is can only be reset manually or by POR, not by NRESET
-	f|AutoInc|1|1|Auto-increment register address (Cf. §4.5)   
+	f|AutoInc|1|1|Auto-increment register address (Cf. ï¿½4.5)   
 		v|On|0| When several consecutive data are read/written, register address is incremented
 		v|Off|1|When several consecutive data are read/written, register address is kept fixed
-	f|AutoClr|0|1|Autoclear NINT on RegData read (Cf. §4.7)    
+	f|AutoClr|0|1|Autoclear NINT on RegData read (Cf. ï¿½4.7)    
 		v|On|0|RegInterruptSourceA/B is also automatically cleared when RegDataA/B is read
 		v|Off|1|RegInterruptSourceA/B must be manually cleared, either directly or via RegEventStatus
 r|LEDDriverEnable|LED driver enable register - I/O[n]
@@ -104,7 +104,7 @@ r|LEDDriverEnable|LED driver enable register - I/O[n]
 		v|Disabled|0|LED Driver is disabled
 		v|Enabled|1|LED Driver is enabled
 r|DebounceConfig|Debounce configuration register
-	f|Time|0|3|Debounce time (Cf. §4.6.1) 
+	f|Time|0|3|Debounce time (Cf. ï¿½4.6.1) 
 		v|0ms5|0|0.5ms x 2MHz/fOSC
 		v|1ms|1|1ms x 2MHz/fOSC
 		v|2ms|2|1ms x 2MHz/fOSC
@@ -139,22 +139,22 @@ r|KeyConfig1|Key scan configuration register
 r|KeyConfig2|Key scan configuration register
 	f|Rows|3|3|Number of rows (outputs) + key scan enable
 		v|Off|0|Key scan is off
-		v|2Rows|1|2 rows – IO[0:1]
-		v|3Rows|2|2 rows – IO[0:2]
-		v|4Rows|3|2 rows – IO[0:3]
-		v|5Rows|4|2 rows – IO[0:4]
-		v|6Rows|5|2 rows – IO[0:5]
-		v|7Rows|6|2 rows – IO[0:6]
-		v|8Rows|7|2 rows – IO[0:7]
+		v|2Rows|1|2 rows ï¿½ IO[0:1]
+		v|3Rows|2|2 rows ï¿½ IO[0:2]
+		v|4Rows|3|2 rows ï¿½ IO[0:3]
+		v|5Rows|4|2 rows ï¿½ IO[0:4]
+		v|6Rows|5|2 rows ï¿½ IO[0:5]
+		v|7Rows|6|2 rows ï¿½ IO[0:6]
+		v|8Rows|7|2 rows ï¿½ IO[0:7]
 	f|Cols|0|3|Number of columns (inputs)
-		v|1Col|0|1 column – IO[8]
-		v|2Cols|1|2 columns – IO[8:9]
-		v|3Cols|2|3 columns – IO[8:10]
-		v|4Cols|3|4 columns – IO[8:11]
-		v|5Cols|4|5 columns – IO[8:12]
-		v|6Cols|5|6 columns – IO[8:13]
-		v|7Cols|6|7 columns – IO[8:14]
-		v|8Cols|7|8 columns – IO[8:15]
+		v|1Col|0|1 column ï¿½ IO[8]
+		v|2Cols|1|2 columns ï¿½ IO[8:9]
+		v|3Cols|2|3 columns ï¿½ IO[8:10]
+		v|4Cols|3|4 columns ï¿½ IO[8:11]
+		v|5Cols|4|5 columns ï¿½ IO[8:12]
+		v|6Cols|5|6 columns ï¿½ IO[8:13]
+		v|7Cols|6|7 columns ï¿½ IO[8:14]
+		v|8Cols|7|8 columns ï¿½ IO[8:15]
 r|KeyData1|Key value (column)
 	f|CollIntr[0..7]|n|1|Column which generated NINT (active low)
 		v|Triggered|0|Column generated NINT. 
@@ -165,15 +165,15 @@ r|KeyData2|Key value (row)
 		v|None|1|Collumn did not generate NINT
 r|OnOffCfg[0..15]|ON/OFF time/intensity register for I/O[n] 
 	f|OnTime|16|5|ON Time of IO[n] (1 - 15 : TOnX = 64 * RegTOnX * (255/ClkX), 16 - 31 : TOnX = 512 * RegTOnX * (255/ClkX))
-		v|Infinite|0|Infinite (Static mode, TOn directly controlled by RegData, Cf §4.9.2) 
+		v|Infinite|0|Infinite (Static mode, TOn directly controlled by RegData, Cf ï¿½4.9.2) 
 	f|OnIntensity|8|8|ON Intensity of IO[n]
 		v|Linear|0|Linear mode : IOnX = RegIOnN
-		v|Logarithmic|1|Logarithmic mode (fading capable IOs only) : IOnN = f(RegIOnN) , Cf §4.9.5 
+		v|Logarithmic|1|Logarithmic mode (fading capable IOs only) : IOnN = f(RegIOnN) , Cf ï¿½4.9.5 
 	f|OffTime|3|5|OFF Time of IO[n], (1 - 15 : TOffN = 64 * RegOffN[7:3] * (255/ClkN), 16 - 31 : TOffN = 512 * RegOffN[7:3] * (255/ClkN))
-		v|Infinite|0|Infinite (Single shot mode, TOff directly controlled by RegData, Cf §4.9.3) 
+		v|Infinite|0|Infinite (Single shot mode, TOff directly controlled by RegData, Cf ï¿½4.9.3) 
 	f|OffIntensity|0|3|OFF Intensity of IO[n] 
 		v|Linear|0|Linear mode : IOffN = 4 x RegOff[2:0]
-		v|Logarithmic|1|Logarithmic mode (fading capable IOs only) : IOffN = f(4 x RegOffN[2:0]) , Cf §4.9.5 
+		v|Logarithmic|1|Logarithmic mode (fading capable IOs only) : IOffN = f(4 x RegOffN[2:0]) , Cf ï¿½4.9.5 
 r|RiseFallCfg[4..15]|Fade configuration register for I/O[n]
 	f|FadeIn|8|5|Fade In setting of IO[n], (1 - 15 : TRiseN = (RegIOnN-(4xRegOffN[2:0])) * RegTRiseN * (255/ClkN) 16 - 31 : TRiseN = 16 * (RegIOnN-(4xRegOffN[2:0])) * RegTRiseN * (255/ClkN))
 		v|Off|0|No fade in configured

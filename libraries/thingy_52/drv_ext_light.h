@@ -36,7 +36,7 @@
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /** @file GPIO extender LED driver
+/** @file GPIO extender LED driver
  *
  * @defgroup gpio_ext_driver_led GPIO extender LED driver
  * @{
@@ -48,21 +48,25 @@
 #ifndef __DRV_EXT_LIGHT_H__
 #define __DRV_EXT_LIGHT_H__
 
-#include <stdint.h>
 #include "app_error.h"
-#include "drv_sx1509.h"
-#include "sx150x_led_drv_regs.h"
-#include "sx150x_led_drv_calc.h"
 #include "app_timer.h"
+#include "drv_sx1509.h"
+#include "sx150x_led_drv_calc.h"
+#include "sx150x_led_drv_regs.h"
+#include <stdint.h>
 
-#define DRV_EXT_LIGHT_INTENSITY_MAX ((uint8_t)(0xFF))   ///< Maximum light intensity value.
-#define DRV_EXT_LIGHT_INTENSITY_OFF (0)                 ///< Minimum light intensity value (off).
+#define DRV_EXT_LIGHT_INTENSITY_MAX ((uint8_t)(0xFF)) ///< Maximum light intensity value.
+#define DRV_EXT_LIGHT_INTENSITY_OFF (0)               ///< Minimum light intensity value (off).
 
-#define DRV_EXT_LIGHT_MAX_PIN_ID_ALLOWED        16      ///< Highest I/O extender pin ID possible for a connected light. Dependent on driver implementation.
-#define DRV_EXT_LIGHT_NUM_LIGHTS_MAX            (((DRV_SX1509_HIGHINPMODE_PIN15_Pos + 1) < (16)) ? \
-                                                (DRV_SX1509_HIGHINPMODE_PIN15_Pos + 1) : (16))          ///< Maximum number of lights, depends on the IO extender and maximum of current implementation (16).
-#define DRV_EXT_LIGHT_IOEXT_CLKX_DIV_MAX        (DRV_SX1509_MISC_CLKX_Msk >> DRV_SX1509_MISC_CLKX_Pos)  ///< Maximum ClkX divider.
-#define DRV_EXT_LIGHT_INVALID_RESYNC_PIN        255     ///< If IO extender resync pin is unused.
+#define DRV_EXT_LIGHT_MAX_PIN_ID_ALLOWED                                                                               \
+    16 ///< Highest I/O extender pin ID possible for a connected light. Dependent on driver implementation.
+#define DRV_EXT_LIGHT_NUM_LIGHTS_MAX                                                                                   \
+    (((DRV_SX1509_HIGHINPMODE_PIN15_Pos + 1) < (16))                                                                   \
+         ? (DRV_SX1509_HIGHINPMODE_PIN15_Pos + 1)                                                                      \
+         : (16)) ///< Maximum number of lights, depends on the IO extender and maximum of current implementation (16).
+#define DRV_EXT_LIGHT_IOEXT_CLKX_DIV_MAX                                                                               \
+    (DRV_SX1509_MISC_CLKX_Msk >> DRV_SX1509_MISC_CLKX_Pos) ///< Maximum ClkX divider.
+#define DRV_EXT_LIGHT_INVALID_RESYNC_PIN 255               ///< If IO extender resync pin is unused.
 /**@brief The GPIO extender LED driver status codes.
  */
 enum
@@ -74,19 +78,19 @@ enum
     DRV_EXT_LIGHT_STATUS_CODE_INVALID_TIMER_VALUE ///< The desired time is too long. Increase the ClkX divider.
 };
 
-/**@brief Defines the frequency of the LED driver clock (ClkX) of the SX1509 according to ClkX = fOSC/2^(DRV_EXT_LIGHT_CLKX_DIV_n-1).
- * See SX1509 datasheet for details.
+/**@brief Defines the frequency of the LED driver clock (ClkX) of the SX1509 according to ClkX =
+ * fOSC/2^(DRV_EXT_LIGHT_CLKX_DIV_n-1). See SX1509 datasheet for details.
  */
 typedef enum
 {
     DRV_EXT_LIGHT_CLKX_DIV_1 = 1,
-    DRV_EXT_LIGHT_CLKX_DIV_2 ,
-    DRV_EXT_LIGHT_CLKX_DIV_4 ,
-    DRV_EXT_LIGHT_CLKX_DIV_8 ,
+    DRV_EXT_LIGHT_CLKX_DIV_2,
+    DRV_EXT_LIGHT_CLKX_DIV_4,
+    DRV_EXT_LIGHT_CLKX_DIV_8,
     DRV_EXT_LIGHT_CLKX_DIV_16,
     DRV_EXT_LIGHT_CLKX_DIV_32,
     DRV_EXT_LIGHT_CLKX_DIV_64,
-}drv_ext_light_clkx_div_t;
+} drv_ext_light_clkx_div_t;
 
 /**@brief The following color combinations are possible when using @ref drv_ext_light_rgb_sequence_t.
  */
@@ -100,107 +104,107 @@ typedef enum
     DRV_EXT_LIGHT_COLOR_PURPLE,
     DRV_EXT_LIGHT_COLOR_CYAN,
     DRV_EXT_LIGHT_COLOR_WHITE
-}drv_ext_light_color_mix_t;
+} drv_ext_light_color_mix_t;
 
 /**@brief The state of the IO extender oscillator for each light.
  */
 typedef enum
 {
-    EXTENDER_OSC_UNUSED,            ///< Ext osc not used for this light.
-    EXTENDER_OSC_USED_RUNNING,      ///< Ext osc running (Light currently on).
-    EXTENDER_OSC_USED_PAUSED,       ///< Ext osc paused (Light currently off).
-    EXTENDER_OSC_USED_PERM,         ///< Ext osc used on a permanent basis (light dimmed).
-    IOEXT_OSC_STATUS_T_SIZE         ///< Number of different possible IO extender oscillator statuses.
-}drv_ext_light_ioext_osc_status_t;
+    EXTENDER_OSC_UNUSED,       ///< Ext osc not used for this light.
+    EXTENDER_OSC_USED_RUNNING, ///< Ext osc running (Light currently on).
+    EXTENDER_OSC_USED_PAUSED,  ///< Ext osc paused (Light currently off).
+    EXTENDER_OSC_USED_PERM,    ///< Ext osc used on a permanent basis (light dimmed).
+    IOEXT_OSC_STATUS_T_SIZE    ///< Number of different possible IO extender oscillator statuses.
+} drv_ext_light_ioext_osc_status_t;
 
 /**@brief Struct used by the app_timer handler, mainly for power saving.
  */
 typedef struct
 {
-    uint32_t active_time_ms;                            ///< Total time for a light to be on or dimmed.
-    uint32_t inactive_time_ms;                          ///< Total time for a light to be off.
-    drv_ext_light_color_mix_t colors;                   ///< Color mix used for breathe, single-shot, or blink.
-    drv_ext_light_ioext_osc_status_t ioext_osc_status;  ///< Status, holds information on the current use of the IO extender oscillator.
-}drv_ext_light_status_t;
+    uint32_t active_time_ms;          ///< Total time for a light to be on or dimmed.
+    uint32_t inactive_time_ms;        ///< Total time for a light to be off.
+    drv_ext_light_color_mix_t colors; ///< Color mix used for breathe, single-shot, or blink.
+    drv_ext_light_ioext_osc_status_t
+        ioext_osc_status; ///< Status, holds information on the current use of the IO extender oscillator.
+} drv_ext_light_status_t;
 
 /**@brief Default initial value configuration for each light.
  */
-#define DRV_EXT_LIGHT_STATUS_INIT                    \
-{                                                    \
-    .active_time_ms   = 0,                           \
-    .inactive_time_ms = 0,                           \
-    .colors           = DRV_EXT_LIGHT_COLOR_NONE,    \
-    .ioext_osc_status = EXTENDER_OSC_UNUSED          \
-}
+#define DRV_EXT_LIGHT_STATUS_INIT                                                                                      \
+    {                                                                                                                  \
+        .active_time_ms = 0, .inactive_time_ms = 0, .colors = DRV_EXT_LIGHT_COLOR_NONE,                                \
+        .ioext_osc_status = EXTENDER_OSC_UNUSED                                                                        \
+    }
 
 /**@brief App timer and internal light timing struct.
  */
 typedef struct
 {
-    drv_ext_light_status_t * p_status;      ///< Light status information.
-    app_timer_id_t           timer;         ///< App timer information.
-}drv_ext_light_data_t;
+    drv_ext_light_status_t *p_status; ///< Light status information.
+    app_timer_id_t timer;             ///< App timer information.
+} drv_ext_light_data_t;
 
 /**@brief Define to create timers associated with each light source.
  */
-#define DRV_EXT_LIGHT_DEF(light_id)                                                                             \
-    static drv_ext_light_status_t light_id##_timings = DRV_EXT_LIGHT_STATUS_INIT;                               \
-    static app_timer_t light_id##_timer_data = { {0} };                                                         \
-    static drv_ext_light_data_t light_id = {.p_status = &light_id##_timings, .timer = &light_id##_timer_data}  \
+#define DRV_EXT_LIGHT_DEF(light_id)                                                                                    \
+    static drv_ext_light_status_t light_id##_timings = DRV_EXT_LIGHT_STATUS_INIT;                                      \
+    static app_timer_t light_id##_timer_data = {{0}};                                                                  \
+    static drv_ext_light_data_t light_id = {.p_status = &light_id##_timings, .timer = &light_id##_timer_data}
 
 /**@brief Monochrome (single) or RGB light.
  */
 typedef enum
 {
-    DRV_EXT_LIGHT_TYPE_MONO,        ///< Monochrome (single) LED.
-    DRV_EXT_LIGHT_TYPE_RGB          ///< RGB LED (three IOs used).
-}drv_ext_light_reg_type_t;
+    DRV_EXT_LIGHT_TYPE_MONO, ///< Monochrome (single) LED.
+    DRV_EXT_LIGHT_TYPE_RGB   ///< RGB LED (three IOs used).
+} drv_ext_light_reg_type_t;
 
 /**@brief Struct that defines the type of light (monochrome or RGB) and the corresponding connected pins.
  All lights are per definition sinked (The IO extender provides ground to the lights).*/
 typedef struct
 {
-    drv_ext_light_reg_type_t type;  ///< Monochrome or RGB.
-    union
-    {
-        uint8_t mono;               ///< Monochrome pin.
+    drv_ext_light_reg_type_t type; ///< Monochrome or RGB.
+    union {
+        uint8_t mono; ///< Monochrome pin.
         struct
         {
-            uint8_t r;              ///< RGB R pin.
-            uint8_t g;              ///< RGB G pin.
-            uint8_t b;              ///< RGB B pin.
-        }rgb;
-    }pin;
-    drv_ext_light_data_t * p_data;        ///< Associated data for this light (app timer and timings).
-}drv_ext_light_conf_t;
+            uint8_t r; ///< RGB R pin.
+            uint8_t g; ///< RGB G pin.
+            uint8_t b; ///< RGB B pin.
+        } rgb;
+    } pin;
+    drv_ext_light_data_t *p_data; ///< Associated data for this light (app timer and timings).
+} drv_ext_light_conf_t;
 
 /**@brief Struct for initializing the light driver.
-*/
+ */
 typedef struct
 {
-    drv_ext_light_conf_t const * p_light_conf;          ///< Array of lights, each with their specific configuraion.
-    uint8_t                      num_lights;            ///< Number of connected lights.
-    drv_ext_light_clkx_div_t     clkx_div;              ///< IO extender clock divider.
-    drv_sx1509_cfg_t const     * p_twi_conf;            ///< pointer to TWI (I2C) configuration for communication between master and IO extender.
-    uint8_t                      resync_pin;            ///< Pin used to resync IO extender counters. Use DRV_EXT_LIGHT_INVALID_RESYNC_PIN if unused.
+    drv_ext_light_conf_t const *p_light_conf; ///< Array of lights, each with their specific configuraion.
+    uint8_t num_lights;                       ///< Number of connected lights.
+    drv_ext_light_clkx_div_t clkx_div;        ///< IO extender clock divider.
+    drv_sx1509_cfg_t const
+        *p_twi_conf;    ///< pointer to TWI (I2C) configuration for communication between master and IO extender.
+    uint8_t resync_pin; ///< Pin used to resync IO extender counters. Use DRV_EXT_LIGHT_INVALID_RESYNC_PIN if unused.
 } drv_ext_light_init_t;
 
 /**@brief Simplified struct for setting RGB intensity directly.
-*/
+ */
 typedef struct
 {
-    uint8_t r;          ///< Red intensity.
-    uint8_t g;          ///< Green intensity.
-    uint8_t b;          ///< Blue intensity.
-}drv_ext_light_rgb_intensity_t;
+    uint8_t r; ///< Red intensity.
+    uint8_t g; ///< Green intensity.
+    uint8_t b; ///< Blue intensity.
+} drv_ext_light_rgb_intensity_t;
 
 /**@brief The color mix and sequence variables if a sequence (e.g. breathe) is used.
  */
 typedef struct
 {
-    drv_ext_light_color_mix_t color;            ///< Color mix used for the sequence.
-    drv_ext_light_sequence_t  sequence_vals;    ///< Defines sequence values: on/off/fade_in/fade_out times, and on/off intensities.
-}drv_ext_light_rgb_sequence_t;
+    drv_ext_light_color_mix_t color; ///< Color mix used for the sequence.
+    drv_ext_light_sequence_t
+        sequence_vals; ///< Defines sequence values: on/off/fade_in/fade_out times, and on/off intensities.
+} drv_ext_light_rgb_sequence_t;
 
 /**@brief Macro for initializing the sequence struct with default values.
  */
@@ -208,9 +212,11 @@ typedef struct
 
 /**@brief Function for resetting all the registers of the IO extender to their default values.
  *
- * @warning  This reset applies to all registers, regardless if they were set by another driver outside of drv_ext_light.
+ * @warning  This reset applies to all registers, regardless if they were set by another driver outside of
+ * drv_ext_light.
  *
- * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well which are not listed below).
+ * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well
+ * which are not listed below).
  * @retval DRV_EXT_LIGHT_STATUS_CODE_SUCCESS
  */
 ret_code_t drv_ext_light_reset(void);
@@ -221,7 +227,8 @@ ret_code_t drv_ext_light_reset(void);
  *
  * @note In case the given LED ID corresponds to an RGB light, all colors will be set to max intensity.
  *
- * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well which are not listed below).
+ * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well
+ * which are not listed below).
  * @retval DRV_EXT_LIGHT_STATUS_CODE_SUCCESS
  * @retval DRV_EXT_LIGHT_STATUS_CODE_INVALID_PARAM
  */
@@ -233,7 +240,8 @@ ret_code_t drv_ext_light_on(uint32_t id);
  *
  * @note In case the given LED ID corresponds to a RGB light, all colors will be set to 0 intensity.
  *
- * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well which are not listed below).
+ * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well
+ * which are not listed below).
  * @retval DRV_EXT_LIGHT_STATUS_CODE_SUCCESS
  * @retval DRV_EXT_LIGHT_STATUS_CODE_INVALID_PARAM
  */
@@ -244,7 +252,8 @@ ret_code_t drv_ext_light_off(uint32_t id);
  * @param[in] id            Specifies the ID of the given light. (Has to be in the range [0, num_lights-1]).
  * @param[in] intensity     (0-255).
  *
- * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well which are not listed below).
+ * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well
+ * which are not listed below).
  * @retval DRV_EXT_LIGHT_STATUS_CODE_SUCCESS
  * @retval DRV_EXT_LIGHT_STATUS_CODE_INVALID_PARAM
  */
@@ -255,11 +264,12 @@ ret_code_t drv_ext_light_intensity_set(uint32_t id, uint8_t intensity);
  * @param[in] id            Specifies the ID of the given light. (Has to be in the range [0, num_lights-1]).
  * @param[in] p_intensity   (0-255).
  *
- * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well which are not listed below).
+ * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well
+ * which are not listed below).
  * @retval DRV_EXT_LIGHT_STATUS_CODE_SUCCESS
  * @retval DRV_EXT_LIGHT_STATUS_CODE_INVALID_PARAM
  */
-ret_code_t drv_ext_light_rgb_intensity_set(uint32_t id, drv_ext_light_rgb_intensity_t const * const p_intensity);
+ret_code_t drv_ext_light_rgb_intensity_set(uint32_t id, drv_ext_light_rgb_intensity_t const *const p_intensity);
 
 /**
  * @brief Function for setting color for a given light through the GPIO extender.
@@ -270,15 +280,16 @@ ret_code_t drv_ext_light_rgb_intensity_set(uint32_t id, drv_ext_light_rgb_intens
  * @note    The actual timings in milliseconds will not necessarily correspond to the supplied times.
  *          The underlying functionality will choose register values to obtain timings as close as possible.
  *          Adjusting DRV_EXT_LIGHT_CLKX_DIV will influence the accuracy of this function.
- *          Also note that for the remaining intensity and fade parameters, values will be set as close as possible to the desired values.
- *          The user may read back p_sequence, which will be populated with the actual values.
+ *          Also note that for the remaining intensity and fade parameters, values will be set as close as possible to
+ * the desired values. The user may read back p_sequence, which will be populated with the actual values.
  * @note    If the resync_pin is used, calling this function will resync all counters on the IO extender.
  *
- * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well which are not listed below).
+ * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well
+ * which are not listed below).
  * @retval DRV_EXT_LIGHT_STATUS_CODE_SUCCESS
  * @retval DRV_EXT_LIGHT_STATUS_CODE_INVALID_PARAM
  */
-ret_code_t drv_ext_light_sequence(uint32_t id, drv_ext_light_sequence_t * const p_sequence);
+ret_code_t drv_ext_light_sequence(uint32_t id, drv_ext_light_sequence_t *const p_sequence);
 
 /**
  * @brief Function for setting color for a given light through the GPIO extender.
@@ -288,32 +299,36 @@ ret_code_t drv_ext_light_sequence(uint32_t id, drv_ext_light_sequence_t * const 
  *s
  * @note    The actual timings in milliseconds will not necessarily correspond to the supplied times.
  *          The underlying functionality will choose register values to obtain timings as close as possible.
- *          Adjusting drv_ext_light_clkx_div_t::clkx_div supplied to drv_ext_light_init will influence the accuracy of this function.
- *          Also note that for the remaining intensity and fade parameters, values will be set as close as possible to the desired values.
- *          The user may read back p_sequence, which will be populated with the actual values.
+ *          Adjusting drv_ext_light_clkx_div_t::clkx_div supplied to drv_ext_light_init will influence the accuracy of
+ *this function. Also note that for the remaining intensity and fade parameters, values will be set as close as possible
+ *to the desired values. The user may read back p_sequence, which will be populated with the actual values.
  * @note    If the resync_pin is used, calling this function will resync all counters on the IO extender.
  *
- * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well which are not listed below).
+ * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well
+ *which are not listed below).
  * @retval DRV_EXT_LIGHT_STATUS_CODE_SUCCESS
  * @retval DRV_EXT_LIGHT_STATUS_CODE_INVALID_PARAM
  */
-ret_code_t drv_ext_light_rgb_sequence(uint32_t id, drv_ext_light_rgb_sequence_t * const p_sequence);
+ret_code_t drv_ext_light_rgb_sequence(uint32_t id, drv_ext_light_rgb_sequence_t *const p_sequence);
 
 /**@brief Function for initializing the drv_ext_light driver.
  *
- * @param[in] p_init            Contains the full configuration struct sent to drv_ext_light_init @ref drv_ext_light_init_t.
+ * @param[in] p_init            Contains the full configuration struct sent to drv_ext_light_init @ref
+ * drv_ext_light_init_t.
  * @param[in] on_init_reset     If true, the io extender will be reset on init. This will put the
- *                              io extender in a known state, but will delete any previous configurations, even from other drivers.
+ *                              io extender in a known state, but will delete any previous configurations, even from
+ * other drivers.
  *
  * @note    Make sure that APP_SCHED_INIT and APP_TIMER_APPSH_INIT have been run prior to this function call.
- *          Also note that this driver will take full control of the IO extender oscillator. This may influence other HW connected to the extender on other pins.
- *          p_init->p_light_conf->p_data must reside in RAM.
+ *          Also note that this driver will take full control of the IO extender oscillator. This may influence other HW
+ * connected to the extender on other pins. p_init->p_light_conf->p_data must reside in RAM.
  *
- * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well which are not listed below).
+ * @return Status codes from this function. (Return codes may originate from other underlying modules/drivers as well
+ * which are not listed below).
  * @retval DRV_EXT_LIGHT_STATUS_CODE_SUCCESS
  * @retval DRV_EXT_LIGHT_STATUS_CODE_INVALID_PARAM
  */
-ret_code_t drv_ext_light_init(drv_ext_light_init_t const * p_init, bool on_init_reset);
+ret_code_t drv_ext_light_init(drv_ext_light_init_t const *p_init, bool on_init_reset);
 
 #endif
 

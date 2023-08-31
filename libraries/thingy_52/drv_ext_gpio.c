@@ -37,58 +37,53 @@
  */
 
 #include "drv_ext_gpio.h"
-#include <stdint.h>
-#include "drv_sx1509.h"
 #include "app_util_platform.h"
+#include "drv_sx1509.h"
 #include "nrf_delay.h"
-#define  NRF_LOG_MODULE_NAME "drv_ext_gpio  "
-#include "nrf_log.h"
+#include <stdint.h>
+#define NRF_LOG_MODULE_NAME "drv_ext_gpio  "
 #include "macros_common.h"
+#include "nrf_log.h"
 
 static drv_ext_gpio_init_t m_drv_ext_gpio;
 
-#define RETURN_IF_ERROR_EXT_GPIO_CLOSE(err_code)                            \
-if ((err_code) != NRF_SUCCESS)                                              \
-{                                                                           \
-    NRF_LOG_ERROR("Line: %d, with error code %d \r\n", __LINE__, err_code); \
-    (void)drv_sx1509_close();                                               \
-    return err_code;                                                        \
-}
+#define RETURN_IF_ERROR_EXT_GPIO_CLOSE(err_code)                                                                       \
+    if ((err_code) != NRF_SUCCESS)                                                                                     \
+    {                                                                                                                  \
+        NRF_LOG_ERROR("Line: %d, with error code %d \r\n", __LINE__, err_code);                                        \
+        (void)drv_sx1509_close();                                                                                      \
+        return err_code;                                                                                               \
+    }
 
-#define VALID_PIN_CHECK(PIN)                              \
-if ((PIN) > DRV_EXT_GPIO_PIN_HIGHEST_ID)                  \
-{                                                         \
-    NRF_LOG_ERROR("Pin number out of range. Pin number: %d\r\n", PIN); \
-    return DRV_EXT_GPIO_STATUS_CODE_INVALID_PIN;          \
-}
+#define VALID_PIN_CHECK(PIN)                                                                                           \
+    if ((PIN) > DRV_EXT_GPIO_PIN_HIGHEST_ID)                                                                           \
+    {                                                                                                                  \
+        NRF_LOG_ERROR("Pin number out of range. Pin number: %d\r\n", PIN);                                             \
+        return DRV_EXT_GPIO_STATUS_CODE_INVALID_PIN;                                                                   \
+    }
 
-#define VALID_PIN_VALUES_CHECK(PIN_VALUES)                \
-if ((PIN_VALUES) >= (1 << DRV_EXT_GPIO_NUM_PINS_TOTAL))   \
-{                                                         \
-    NRF_LOG_ERROR("Pin values out of range. Pin value: %d\r\n", PIN_VALUES); \
-    return DRV_EXT_GPIO_STATUS_CODE_INVALID_PIN;          \
-}
+#define VALID_PIN_VALUES_CHECK(PIN_VALUES)                                                                             \
+    if ((PIN_VALUES) >= (1 << DRV_EXT_GPIO_NUM_PINS_TOTAL))                                                            \
+    {                                                                                                                  \
+        NRF_LOG_ERROR("Pin values out of range. Pin value: %d\r\n", PIN_VALUES);                                       \
+        return DRV_EXT_GPIO_STATUS_CODE_INVALID_PIN;                                                                   \
+    }
 
-#define VALID_PIN_MASK_CHECK(PIN_MASK)                    \
-if ((PIN_MASK) >= (1 << DRV_EXT_GPIO_NUM_PINS_TOTAL))     \
-{                                                         \
-    NRF_LOG_ERROR("Pin mask out of range. Pin mask: %x\r\n", PIN_MASK); \
-    return(DRV_EXT_GPIO_STATUS_CODE_INVALID_PIN);         \
-}                                                         \
-if(PIN_MASK == 0)                                         \
-{                                                         \
-    NRF_LOG_ERROR("Pin mask is zero. Pin mask: %x\r\n", PIN_MASK); \
-    return(DRV_EXT_GPIO_STATUS_CODE_INVALID_PIN);         \
-}
+#define VALID_PIN_MASK_CHECK(PIN_MASK)                                                                                 \
+    if ((PIN_MASK) >= (1 << DRV_EXT_GPIO_NUM_PINS_TOTAL))                                                              \
+    {                                                                                                                  \
+        NRF_LOG_ERROR("Pin mask out of range. Pin mask: %x\r\n", PIN_MASK);                                            \
+        return (DRV_EXT_GPIO_STATUS_CODE_INVALID_PIN);                                                                 \
+    }                                                                                                                  \
+    if (PIN_MASK == 0)                                                                                                 \
+    {                                                                                                                  \
+        NRF_LOG_ERROR("Pin mask is zero. Pin mask: %x\r\n", PIN_MASK);                                                 \
+        return (DRV_EXT_GPIO_STATUS_CODE_INVALID_PIN);                                                                 \
+    }
 
-
-uint32_t drv_ext_gpio_cfg(
-    uint32_t                      pin_number,
-    drv_ext_gpio_pin_dir_t        dir,
-    drv_ext_gpio_pin_input_buf_t  input_buf,
-    drv_ext_gpio_pin_pull_t       pull_config,
-    drv_ext_gpio_pin_drive_type_t drive_type,
-    drv_ext_gpio_pin_slew_rate_t  slew_rate)
+uint32_t drv_ext_gpio_cfg(uint32_t pin_number, drv_ext_gpio_pin_dir_t dir, drv_ext_gpio_pin_input_buf_t input_buf,
+                          drv_ext_gpio_pin_pull_t pull_config, drv_ext_gpio_pin_drive_type_t drive_type,
+                          drv_ext_gpio_pin_slew_rate_t slew_rate)
 {
 
     uint32_t err_code;
@@ -113,7 +108,7 @@ uint32_t drv_ext_gpio_cfg(
         err_code = drv_sx1509_pulldown_modify((1UL << pin_number), 0);
         RETURN_IF_ERROR_EXT_GPIO_CLOSE(err_code);
     }
-    else if (pull_config == DRV_EXT_GPIO_PIN_PULLUP )
+    else if (pull_config == DRV_EXT_GPIO_PIN_PULLUP)
     {
         err_code = drv_sx1509_pulldown_modify(0, (1UL << pin_number));
         RETURN_IF_ERROR_EXT_GPIO_CLOSE(err_code);
@@ -197,7 +192,6 @@ uint32_t drv_ext_gpio_cfg(
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
 
-
 uint32_t drv_ext_gpio_reset(void)
 {
     uint32_t err_code;
@@ -210,31 +204,29 @@ uint32_t drv_ext_gpio_reset(void)
 
     err_code = drv_sx1509_close();
     RETURN_IF_ERROR_EXT_GPIO_CLOSE(err_code);
-    
+
     nrf_delay_ms(5); // Max 2.5 ms reset time.
 
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
-
 
 uint32_t drv_ext_gpio_reg_data_init(uint32_t data)
 {
     uint32_t err_code;
 
     VALID_PIN_VALUES_CHECK(data);
-    
+
     err_code = drv_sx1509_open(m_drv_ext_gpio.p_cfg);
     RETURN_IF_ERROR_EXT_GPIO_CLOSE(err_code);
-    
+
     err_code = drv_sx1509_data_set(data);
     RETURN_IF_ERROR_EXT_GPIO_CLOSE(err_code);
-    
+
     err_code = drv_sx1509_close();
     RETURN_IF_ERROR_EXT_GPIO_CLOSE(err_code);
 
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
-
 
 uint32_t drv_ext_gpio_cfg_output(uint32_t pin_number)
 {
@@ -253,7 +245,6 @@ uint32_t drv_ext_gpio_cfg_output(uint32_t pin_number)
 
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
-
 
 uint32_t drv_ext_gpio_cfg_input(uint32_t pin_number, drv_ext_gpio_pin_pull_t pull_config)
 {
@@ -279,7 +270,6 @@ uint32_t drv_ext_gpio_cfg_input(uint32_t pin_number, drv_ext_gpio_pin_pull_t pul
 
         err_code = drv_sx1509_pulldown_modify((1UL << pin_number), 0);
         RETURN_IF_ERROR_EXT_GPIO_CLOSE(err_code);
-
     }
     else if (pull_config == DRV_EXT_GPIO_PIN_PULLUP)
     {
@@ -303,7 +293,6 @@ uint32_t drv_ext_gpio_cfg_input(uint32_t pin_number, drv_ext_gpio_pin_pull_t pul
 
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
-
 
 uint32_t drv_ext_gpio_pin_dir_modify(uint32_t pin_number, drv_ext_gpio_pin_dir_t direction)
 {
@@ -336,7 +325,6 @@ uint32_t drv_ext_gpio_pin_dir_modify(uint32_t pin_number, drv_ext_gpio_pin_dir_t
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
 
-
 uint32_t drv_ext_gpio_pin_slew_rate_modify(uint32_t pin_number, drv_ext_gpio_pin_slew_rate_t slew_rate)
 {
     uint32_t err_code;
@@ -367,7 +355,6 @@ uint32_t drv_ext_gpio_pin_slew_rate_modify(uint32_t pin_number, drv_ext_gpio_pin
 
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
-
 
 uint32_t drv_ext_gpio_pin_drive_type_modify(uint32_t pin_number, drv_ext_gpio_pin_drive_type_t drive_type)
 {
@@ -400,7 +387,6 @@ uint32_t drv_ext_gpio_pin_drive_type_modify(uint32_t pin_number, drv_ext_gpio_pi
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
 
-
 uint32_t drv_ext_gpio_pin_input_buffer_modify(uint32_t pin_number, drv_ext_gpio_pin_input_buf_t input_buf)
 {
     uint32_t err_code;
@@ -432,7 +418,6 @@ uint32_t drv_ext_gpio_pin_input_buffer_modify(uint32_t pin_number, drv_ext_gpio_
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
 
-
 uint32_t drv_ext_gpio_pin_set(uint32_t pin_number)
 {
     uint32_t err_code;
@@ -450,7 +435,6 @@ uint32_t drv_ext_gpio_pin_set(uint32_t pin_number)
 
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
-
 
 uint32_t drv_ext_gpio_pins_set(uint32_t pin_mask)
 {
@@ -470,7 +454,6 @@ uint32_t drv_ext_gpio_pins_set(uint32_t pin_mask)
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
 
-
 uint32_t drv_ext_gpio_pin_clear(uint32_t pin_number)
 {
     uint32_t err_code;
@@ -489,7 +472,6 @@ uint32_t drv_ext_gpio_pin_clear(uint32_t pin_number)
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
 
-
 uint32_t drv_ext_gpio_pins_clear(uint32_t pin_mask)
 {
     uint32_t err_code;
@@ -507,7 +489,6 @@ uint32_t drv_ext_gpio_pins_clear(uint32_t pin_mask)
 
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
-
 
 uint32_t drv_ext_gpio_pin_toggle(uint32_t pin_number)
 {
@@ -539,7 +520,6 @@ uint32_t drv_ext_gpio_pin_toggle(uint32_t pin_number)
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
 
-
 uint32_t drv_ext_gpio_pins_toggle(uint32_t pin_mask)
 {
     uint32_t err_code;
@@ -556,7 +536,7 @@ uint32_t drv_ext_gpio_pins_toggle(uint32_t pin_mask)
     RETURN_IF_ERROR_EXT_GPIO_CLOSE(err_code);
 
     clr_mask = port_data & pin_mask;
-    set_mask = ( (~clr_mask) & pin_mask);
+    set_mask = ((~clr_mask) & pin_mask);
 
     err_code = drv_sx1509_data_modify(set_mask, clr_mask);
     RETURN_IF_ERROR_EXT_GPIO_CLOSE(err_code);
@@ -566,7 +546,6 @@ uint32_t drv_ext_gpio_pins_toggle(uint32_t pin_mask)
 
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
-
 
 uint32_t drv_ext_gpio_pin_write(uint32_t pin_number, uint32_t value)
 {
@@ -594,8 +573,7 @@ uint32_t drv_ext_gpio_pin_write(uint32_t pin_number, uint32_t value)
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
 
-
-uint32_t drv_ext_gpio_pin_read(uint32_t pin_number, uint32_t * const p_pin)
+uint32_t drv_ext_gpio_pin_read(uint32_t pin_number, uint32_t *const p_pin)
 {
     uint32_t err_code;
     uint16_t raw_data;
@@ -616,8 +594,7 @@ uint32_t drv_ext_gpio_pin_read(uint32_t pin_number, uint32_t * const p_pin)
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
 
-
-uint32_t drv_ext_gpio_pins_read(uint32_t * const p_pins)
+uint32_t drv_ext_gpio_pins_read(uint32_t *const p_pins)
 {
     uint32_t err_code;
 
@@ -626,7 +603,7 @@ uint32_t drv_ext_gpio_pins_read(uint32_t * const p_pins)
 
     *p_pins = 0;
 
-    err_code = drv_sx1509_data_get((uint16_t*)p_pins);
+    err_code = drv_sx1509_data_get((uint16_t *)p_pins);
     RETURN_IF_ERROR_EXT_GPIO_CLOSE(err_code);
 
     err_code = drv_sx1509_close();
@@ -635,8 +612,7 @@ uint32_t drv_ext_gpio_pins_read(uint32_t * const p_pins)
     return DRV_EXT_GPIO_STATUS_CODE_SUCCESS;
 }
 
-
-uint32_t drv_ext_gpio_init(drv_ext_gpio_init_t const * const p_init, bool on_init_reset)
+uint32_t drv_ext_gpio_init(drv_ext_gpio_init_t const *const p_init, bool on_init_reset)
 {
     uint32_t err_code;
 
@@ -649,7 +625,8 @@ uint32_t drv_ext_gpio_init(drv_ext_gpio_init_t const * const p_init, bool on_ini
         err_code = drv_ext_gpio_reset();
         if (err_code != DRV_SX1509_STATUS_CODE_SUCCESS)
         {
-            return err_code;    // Usual RETURN_IF_ERROR_EXT_GPIO_CLOSE not used as this would call drv_sx1509_close() twice
+            return err_code; // Usual RETURN_IF_ERROR_EXT_GPIO_CLOSE not used as this would call drv_sx1509_close()
+                             // twice
         }
     }
 

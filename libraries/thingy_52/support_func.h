@@ -36,7 +36,7 @@
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-  /** @file Support functions
+/** @file Support functions
  *
  * @defgroup support_func Support functions
  * @{
@@ -48,11 +48,12 @@
 #ifndef __SUPPORT_FUNC_H__
 #define __SUPPORT_FUNC_H__
 
-#include "sdk_errors.h"
 #include "drv_ext_gpio.h"
+#include "sdk_errors.h"
 #include <stdbool.h>
 
-#define SUPPORT_FUNC_MAC_ADDR_STR_LEN ( (BLE_GAP_ADDR_LEN * 2) + 5 + 1) /**< 6 bytes + 5 colon separators + NUL termination */
+#define SUPPORT_FUNC_MAC_ADDR_STR_LEN                                                                                  \
+    ((BLE_GAP_ADDR_LEN * 2) + 5 + 1) /**< 6 bytes + 5 colon separators + NUL termination */
 
 /**@brief Function for printing the MAC addess of the device.
  *
@@ -64,7 +65,7 @@
  * @return NRF_ERROR_SOFTDEVICE_NOT_ENABLED     The SoftDevice has not been enabled.
  * @return Other codes from the underlying drivers.
  */
-ret_code_t support_func_ble_mac_address_get(char * p_mac_addr);
+ret_code_t support_func_ble_mac_address_get(char *p_mac_addr);
 
 /**@brief Function for checking if the device is in debug mode.
  *
@@ -82,7 +83,7 @@ bool support_func_sys_halt_debug_enabled(void);
  * @return NRF_SUCCESS           If the call was successful.
  * @return Other codes from the underlying drivers.
  */
-ret_code_t support_func_configure_io_startup(drv_ext_gpio_init_t const * const p_ext_gpio_init);
+ret_code_t support_func_configure_io_startup(drv_ext_gpio_init_t const *const p_ext_gpio_init);
 
 /**@brief Function for configuring nRF IO and the GPIO extender for shutdown.
  *

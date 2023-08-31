@@ -41,7 +41,7 @@
 
 #include <stdint.h>
 
- /** @file Settings for Sx150x LED driver registers
+/** @file Settings for Sx150x LED driver registers
  *
  * @defgroup sx150x_led_drv_regs Settings for Sx150x LED driver registers
  * @{
@@ -54,51 +54,54 @@
 
 typedef struct
 {
-    uint32_t    on_time_ms;
-    uint8_t     on_intensity;
-    uint32_t    off_time_ms;
-    uint8_t     off_intensity;
-    uint32_t    fade_in_time_ms;
-    uint32_t    fade_out_time_ms;
-}drv_ext_light_sequence_t;
+    uint32_t on_time_ms;
+    uint8_t on_intensity;
+    uint32_t off_time_ms;
+    uint8_t off_intensity;
+    uint32_t fade_in_time_ms;
+    uint32_t fade_out_time_ms;
+} drv_ext_light_sequence_t;
 
 /**@brief Struct for holding values to be placed in io extender led driver registers.
-* Consult the SX150x manual for further details */
+ * Consult the SX150x manual for further details */
 typedef struct
 {
-    uint8_t     on_time;
-    uint8_t     on_intensity;
-    uint8_t     off_time;
-    uint8_t     off_intensity;
-    uint8_t     fade_in_time;
-    uint8_t     fade_out_time;
-}sx150x_led_drv_regs_vals_t;
+    uint8_t on_time;
+    uint8_t on_intensity;
+    uint8_t off_time;
+    uint8_t off_intensity;
+    uint8_t fade_in_time;
+    uint8_t fade_out_time;
+} sx150x_led_drv_regs_vals_t;
 
-#define SX150X_LED_DRIVER_SEQUENCE_ON_TIME_DEFAULT         (0)
-#define SX150X_LED_DRIVER_SEQUENCE_ON_INTENSITY_DEFAULT    (0xFF)
-#define SX150X_LED_DRIVER_SEQUENCE_OFF_TIME_DEFAULT        (0)
-#define SX150X_LED_DRIVER_SEQUENCE_OFF_INTENSITY_DEFAULT   (0)
-#define SX150X_LED_DRIVER_SEQUENCE_FADE_IN_TIME_DEFAULT    (0)
-#define SX150X_LED_DRIVER_SEQUENCE_FADE_OUT_TIME_DEFAULT   (0)
+#define SX150X_LED_DRIVER_SEQUENCE_ON_TIME_DEFAULT (0)
+#define SX150X_LED_DRIVER_SEQUENCE_ON_INTENSITY_DEFAULT (0xFF)
+#define SX150X_LED_DRIVER_SEQUENCE_OFF_TIME_DEFAULT (0)
+#define SX150X_LED_DRIVER_SEQUENCE_OFF_INTENSITY_DEFAULT (0)
+#define SX150X_LED_DRIVER_SEQUENCE_FADE_IN_TIME_DEFAULT (0)
+#define SX150X_LED_DRIVER_SEQUENCE_FADE_OUT_TIME_DEFAULT (0)
 
-#define SEQUENCE_DEFAULT_VAL (drv_ext_light_sequence_t)                                      \
-{   .on_time_ms         =  SX150X_LED_DRIVER_SEQUENCE_ON_TIME_DEFAULT,                       \
-    .on_intensity       =  SX150X_LED_DRIVER_SEQUENCE_ON_INTENSITY_DEFAULT,                  \
-    .off_time_ms        =  SX150X_LED_DRIVER_SEQUENCE_OFF_TIME_DEFAULT,                      \
-    .off_intensity      =  SX150X_LED_DRIVER_SEQUENCE_OFF_INTENSITY_DEFAULT,                 \
-    .fade_in_time_ms    =  SX150X_LED_DRIVER_SEQUENCE_FADE_IN_TIME_DEFAULT,                  \
-    .fade_out_time_ms   =  SX150X_LED_DRIVER_SEQUENCE_FADE_OUT_TIME_DEFAULT,                 \
-}
+#define SEQUENCE_DEFAULT_VAL                                                                                           \
+    (drv_ext_light_sequence_t)                                                                                         \
+    {                                                                                                                  \
+        .on_time_ms = SX150X_LED_DRIVER_SEQUENCE_ON_TIME_DEFAULT,                                                      \
+        .on_intensity = SX150X_LED_DRIVER_SEQUENCE_ON_INTENSITY_DEFAULT,                                               \
+        .off_time_ms = SX150X_LED_DRIVER_SEQUENCE_OFF_TIME_DEFAULT,                                                    \
+        .off_intensity = SX150X_LED_DRIVER_SEQUENCE_OFF_INTENSITY_DEFAULT,                                             \
+        .fade_in_time_ms = SX150X_LED_DRIVER_SEQUENCE_FADE_IN_TIME_DEFAULT,                                            \
+        .fade_out_time_ms = SX150X_LED_DRIVER_SEQUENCE_FADE_OUT_TIME_DEFAULT,                                          \
+    }
 
-#define SEQUENCE_REG_DEFAULT_VAL (sx150x_led_drv_regs_vals_t)                             \
-{   .on_time         =  SX150X_LED_DRIVER_SEQUENCE_ON_TIME_DEFAULT,                       \
-    .on_intensity    =  SX150X_LED_DRIVER_SEQUENCE_ON_INTENSITY_DEFAULT,                  \
-    .off_time        =  SX150X_LED_DRIVER_SEQUENCE_OFF_TIME_DEFAULT,                      \
-    .off_intensity   =  SX150X_LED_DRIVER_SEQUENCE_OFF_INTENSITY_DEFAULT,                 \
-    .fade_in_time    =  SX150X_LED_DRIVER_SEQUENCE_FADE_IN_TIME_DEFAULT,                  \
-    .fade_out_time   =  SX150X_LED_DRIVER_SEQUENCE_FADE_OUT_TIME_DEFAULT,                 \
-}
-
+#define SEQUENCE_REG_DEFAULT_VAL                                                                                       \
+    (sx150x_led_drv_regs_vals_t)                                                                                       \
+    {                                                                                                                  \
+        .on_time = SX150X_LED_DRIVER_SEQUENCE_ON_TIME_DEFAULT,                                                         \
+        .on_intensity = SX150X_LED_DRIVER_SEQUENCE_ON_INTENSITY_DEFAULT,                                               \
+        .off_time = SX150X_LED_DRIVER_SEQUENCE_OFF_TIME_DEFAULT,                                                       \
+        .off_intensity = SX150X_LED_DRIVER_SEQUENCE_OFF_INTENSITY_DEFAULT,                                             \
+        .fade_in_time = SX150X_LED_DRIVER_SEQUENCE_FADE_IN_TIME_DEFAULT,                                               \
+        .fade_out_time = SX150X_LED_DRIVER_SEQUENCE_FADE_OUT_TIME_DEFAULT,                                             \
+    }
 
 #endif
 

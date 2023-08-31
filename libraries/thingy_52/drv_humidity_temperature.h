@@ -55,9 +55,9 @@
  */
 typedef enum
 {
-    DRV_HUMIDITY_TEMPERATURE_EVT_DATA,    /**<Converted value ready to be read.*/
-    DRV_HUMIDITY_TEMPERATURE_EVT_ERROR    /**<Hardware error on the communication bus.*/
-}drv_humidity_temperature_evt_t;
+    DRV_HUMIDITY_TEMPERATURE_EVT_DATA, /**<Converted value ready to be read.*/
+    DRV_HUMIDITY_TEMPERATURE_EVT_ERROR /**<Hardware error on the communication bus.*/
+} drv_humidity_temperature_evt_t;
 
 /**@brief  Humidity-Temperature driver event handler callback type.
  */
@@ -67,12 +67,12 @@ typedef void (*drv_humidity_temperature_evt_handler_t)(drv_humidity_temperature_
  */
 typedef struct
 {
-    uint8_t                      twi_addr;
-    uint32_t                     pin_int;
-    nrf_drv_twi_t        const * p_twi_instance;  ///< The instance of TWI master to be used for transactions.
-    nrf_drv_twi_config_t const * p_twi_cfg;       ///< The TWI configuration to use while the driver is enabled.
-    drv_humidity_temperature_evt_handler_t   evt_handler;
-}drv_humidity_temperature_init_t;
+    uint8_t twi_addr;
+    uint32_t pin_int;
+    nrf_drv_twi_t const *p_twi_instance;   ///< The instance of TWI master to be used for transactions.
+    nrf_drv_twi_config_t const *p_twi_cfg; ///< The TWI configuration to use while the driver is enabled.
+    drv_humidity_temperature_evt_handler_t evt_handler;
+} drv_humidity_temperature_init_t;
 
 /**@brief Function for initializing the humidity-temperature driver.
  *
@@ -81,7 +81,7 @@ typedef struct
  * @retval NRF_SUCCESS             If initialization was successful.
  * @retval NRF_ERROR_INVALID_STATE If the driver is in invalid state.
  */
-uint32_t drv_humidity_temperature_init(drv_humidity_temperature_init_t * p_params);
+uint32_t drv_humidity_temperature_init(drv_humidity_temperature_init_t *p_params);
 
 /**@brief Function for enabling the humidity-temperature sensor.
  *
@@ -96,10 +96,10 @@ uint32_t drv_humidity_temperature_enable(void);
 uint32_t drv_humidity_temperature_disable(void);
 
 /**@brief Function for resetting the chip to all default register values
-*
-* @retval NRF_SUCCESS             If operation was successful
-* @retval NRF_ERROR_BUSY          If TWI bus was busy
-*/
+ *
+ * @retval NRF_SUCCESS             If operation was successful
+ * @retval NRF_ERROR_BUSY          If TWI bus was busy
+ */
 uint32_t drv_humidity_temperature_reset(void);
 
 /**@brief Function for getting the humidity data.

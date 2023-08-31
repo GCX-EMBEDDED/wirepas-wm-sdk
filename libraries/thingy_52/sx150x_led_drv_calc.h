@@ -36,7 +36,7 @@
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /** @file Sx150x LED driver register calculation
+/** @file Sx150x LED driver register calculation
  *
  * @defgroup sx150x_led_drv_calc Sx150x LED driver register calculation
  * @{
@@ -48,23 +48,23 @@
 #ifndef __SX150X_LED_DRV_CALC_H__
 #define __SX150X_LED_DRV_CALC_H__
 
+#include "sdk_errors.h"
 #include "sx150x_led_drv_calc.h"
 #include "sx150x_led_drv_regs.h"
-#include "sdk_errors.h"
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 /**@brief The SX150x led driver calc status codes
  */
 enum
 {
-    SX150x_LED_DRC_CALC_STATUS_CODE_SUCCESS,         ///< Successful.
-    SX150x_LED_DRV_CALC_STATUS_CODE_INACCURATE,      ///< One or more of the set time parameters deviate by more than 20 %. Accept or try again with different values or osc divider.
-    SX150x_LED_DRV_CALC_STATUS_CODE_INVALID_PARAM,   ///< Invalid parameters.
-    SX150x_LED_DRV_CALC_STATUS_CODE_NULL,            ///< NULL parameter supplied.
-    SX150x_LED_DRV_CALC_STATUS_CODE_NOT_INIT,        ///< The module has not been initalized. Has init been called?
+    SX150x_LED_DRC_CALC_STATUS_CODE_SUCCESS,    ///< Successful.
+    SX150x_LED_DRV_CALC_STATUS_CODE_INACCURATE, ///< One or more of the set time parameters deviate by more than 20 %.
+                                                ///< Accept or try again with different values or osc divider.
+    SX150x_LED_DRV_CALC_STATUS_CODE_INVALID_PARAM, ///< Invalid parameters.
+    SX150x_LED_DRV_CALC_STATUS_CODE_NULL,          ///< NULL parameter supplied.
+    SX150x_LED_DRV_CALC_STATUS_CODE_NOT_INIT,      ///< The module has not been initalized. Has init been called?
 };
-
 
 /**@brief Checks if all the supplied pins in port_mask supports fade
  *
@@ -76,7 +76,6 @@ enum
  * @return false            One or more of the supplied pins does not support fade.
  */
 bool sx150x_led_drv_calc_fade_supp(uint16_t port_mask);
-
 
 /**@brief Converts from real values (intensity (0x00-0xFF and time in milliseconds) to register values
  *
@@ -90,12 +89,13 @@ bool sx150x_led_drv_calc_fade_supp(uint16_t port_mask);
  * @return SX150x_LED_DRV_CALC_STATUS_CODE_NULL
  * @return SX150x_LED_DRV_CALC_STATUS_CODE_NOT_INIT
  */
-ret_code_t sx150x_led_drv_calc_convert(uint16_t port_mask, drv_ext_light_sequence_t * const real_vals,
-                                       sx150x_led_drv_regs_vals_t * const reg_vals);
+ret_code_t sx150x_led_drv_calc_convert(uint16_t port_mask, drv_ext_light_sequence_t *const real_vals,
+                                       sx150x_led_drv_regs_vals_t *const reg_vals);
 
 /**@brief Initializes the SX150x led driver register calculation module
  *
- * @param[in] fade_supported_port_mask          16-bit port mask holding "1" in positions corresponding to pins which supports fading.
+ * @param[in] fade_supported_port_mask          16-bit port mask holding "1" in positions corresponding to pins which
+ * supports fading.
  * @param[in] clkx_tics_pr_sec                  Number of ticks / sec for the internal ioext oscillatior after division.
  *
  */

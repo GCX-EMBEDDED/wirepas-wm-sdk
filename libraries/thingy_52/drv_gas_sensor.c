@@ -37,18 +37,18 @@
  */
 
 #include "drv_gas_sensor.h"
-#include "pca20020.h"
-#include "drv_ext_gpio.h"
-#include "nrf_drv_gpiote.h"
-#include "nrf_delay.h"
 #include "app_scheduler.h"
-#include "sdk_errors.h"
 #include "drv_ccs811.h"
 #include "drv_ccs811_bitfields.h"
-#define  NRF_LOG_MODULE_NAME "drv_gas_sensor"
-#include "nrf_log.h"
+#include "drv_ext_gpio.h"
+#include "nrf_delay.h"
+#include "nrf_drv_gpiote.h"
+#include "pca20020.h"
+#include "sdk_errors.h"
+#define NRF_LOG_MODULE_NAME "drv_gas_sensor"
 #include "macros_common.h"
-#include <inttypes.h>   // For PRIu32, PRIu8
+#include "nrf_log.h"
+#include <inttypes.h> // For PRIu32, PRIu8
 
 #define DEBUG_LOG_MODULE_NAME "drv_gas_sensor"
 /** To activate logs, configure the following line with "LVL_INFO". */
@@ -56,31 +56,32 @@
 
 #include "debug_log.h"
 
-#define GAS_SENSOR_ID                       (0x81)   ///< HW ID of the gas sensor.
-#define GAS_SENSOR_TDWAKE_ENABLE_DELAY_US     (20)   ///< minimum time between sensor I2C accesses.
-#define GAS_SENSOR_TAWAKE_ENABLE_DELAY_US     (50)   ///< us for sensor to become active after nWAKE signal.
-#define GAS_SENSOR_PWR_ON_DELAY_MS            (30)   ///< ms for sensor to become active after pwr on. NB: May be up tp 70 ms for first boot after gas sensor firmware download. 20 ms from datasheet + margin.
+#define GAS_SENSOR_ID (0x81)                   ///< HW ID of the gas sensor.
+#define GAS_SENSOR_TDWAKE_ENABLE_DELAY_US (20) ///< minimum time between sensor I2C accesses.
+#define GAS_SENSOR_TAWAKE_ENABLE_DELAY_US (50) ///< us for sensor to become active after nWAKE signal.
+#define GAS_SENSOR_PWR_ON_DELAY_MS                                                                                     \
+    (30) ///< ms for sensor to become active after pwr on. NB: May be up tp 70 ms for first boot after gas sensor
+         ///< firmware download. 20 ms from datasheet + margin.
 
 /**@brief Reads the ERROR_ID register from the gas sensor.
  */
-#define CCS811_PRINT_IF_SENSOR_ERROR                                                           \
-{                                                                                              \
-    uint8_t err_id;                                                                            \
-    if (drv_ccs811_err_id_get(&err_id))                                                        \
-    {                                                                                          \
-        LOG(LVL_DEBUG,"Error from CCS811, could not read error ID. line: %d \r\n",  __LINE__); \
-    }                                                                                          \
-                                                                                               \
-    if (err_id)                                                                                \
-    {                                                                                          \
-        LOG(LVL_DEBUG,"Error from CCS811, code: 0x%x, line: %d \r\n", err_id, __LINE__);       \
-    }                                                                                          \
-}
+#define CCS811_PRINT_IF_SENSOR_ERROR                                                                                   \
+    {                                                                                                                  \
+        uint8_t err_id;                                                                                                \
+        if (drv_ccs811_err_id_get(&err_id))                                                                            \
+        {                                                                                                              \
+            LOG(LVL_DEBUG, "Error from CCS811, could not read error ID. line: %d \r\n", __LINE__);                     \
+        }                                                                                                              \
+                                                                                                                       \
+        if (err_id)                                                                                                    \
+        {                                                                                                              \
+            LOG(LVL_DEBUG, "Error from CCS811, code: 0x%x, line: %d \r\n", err_id, __LINE__);                          \
+        }                                                                                                              \
+    }
 
-
-static drv_ccs811_cfg_t              m_drv_ccs811_cfg = {0}; ///< Driver configuration.
-static drv_gas_sensor_data_handler_t m_data_handler;         ///< Gas sensor data handler.
-static bool                          m_started = false;      ///< Indicates if the gas sensor is started.
+static drv_ccs811_cfg_t m_drv_ccs811_cfg = {0};      ///< Driver configuration.
+static drv_gas_sensor_data_handler_t m_data_handler; ///< Gas sensor data handler.
+static bool m_started = false;                       ///< Indicates if the gas sensor is started.
 
 /**@brief Open gas sensor TWI interface.
  */
@@ -93,11 +94,10 @@ static __inline ret_code_t ccs811_open(void)
     err_code = drv_ext_gpio_pin_clear(SX_CCS_WAKE);
     RETURN_IF_ERROR(err_code);
 
-    nrf_delay_us(GAS_SENSOR_TAWAKE_ENABLE_DELAY_US);  // Delay for gas sensor to become active according to datasheet.
+    nrf_delay_us(GAS_SENSOR_TAWAKE_ENABLE_DELAY_US); // Delay for gas sensor to become active according to datasheet.
 
     return drv_ccs811_open(&m_drv_ccs811_cfg);
 }
-
 
 /**@brief Close gas sensor TWI interface.
  */
@@ -114,20 +114,19 @@ static __inline ret_code_t ccs811_close(void)
     return NRF_SUCCESS;
 }
 
-
 /**@brief Verfies the hardware ID of the gas sensor.
  */
 static ret_code_t hw_id_verify(void)
 {
-    uint8_t  hw_id = 0;
-    bool     hw_id_correct = false;
+    uint8_t hw_id = 0;
+    bool hw_id_correct = false;
 
-    if(ccs811_open() == NRF_SUCCESS)
+    if (ccs811_open() == NRF_SUCCESS)
     {
-        if( drv_ccs811_hw_id_get(&hw_id) == NRF_SUCCESS )
+        if (drv_ccs811_hw_id_get(&hw_id) == NRF_SUCCESS)
         {
             CCS811_PRINT_IF_SENSOR_ERROR;
-            hw_id_correct = ( hw_id == GAS_SENSOR_ID ) ? true : false;
+            hw_id_correct = (hw_id == GAS_SENSOR_ID) ? true : false;
         }
     }
 
@@ -136,13 +135,12 @@ static ret_code_t hw_id_verify(void)
     return hw_id_correct == true ? NRF_SUCCESS : NRF_ERROR_NOT_FOUND;
 }
 
-
 /**@brief Verifes that a valid app version is running on the gas sensor.
  */
 static ret_code_t valid_app_verify(void)
 {
-    ret_code_t  err_code;
-    uint8_t     status;
+    ret_code_t err_code;
+    uint8_t status;
 
     err_code = ccs811_open();
     RETURN_IF_ERROR(err_code);
@@ -162,54 +160,54 @@ static ret_code_t valid_app_verify(void)
 }
 
 #ifdef GAS_SENSOR_DEBUG
-    /**@brief Gets all hardware and firmware version information from the gas sensor.
-    */
-    static ret_code_t gas_sensor_info_get(uint8_t * p_hw_id, uint8_t * p_hw_version, uint16_t * p_fw_boot_version, uint16_t * p_fw_app_version)
-    {
-        ret_code_t  err_code;
+/**@brief Gets all hardware and firmware version information from the gas sensor.
+ */
+static ret_code_t gas_sensor_info_get(uint8_t *p_hw_id, uint8_t *p_hw_version, uint16_t *p_fw_boot_version,
+                                      uint16_t *p_fw_app_version)
+{
+    ret_code_t err_code;
 
-        err_code = ccs811_open();
-        RETURN_IF_ERROR(err_code);
+    err_code = ccs811_open();
+    RETURN_IF_ERROR(err_code);
 
-        err_code = drv_ccs811_hw_id_get(p_hw_id);
-        RETURN_IF_ERROR(err_code);
-        CCS811_PRINT_IF_SENSOR_ERROR;
+    err_code = drv_ccs811_hw_id_get(p_hw_id);
+    RETURN_IF_ERROR(err_code);
+    CCS811_PRINT_IF_SENSOR_ERROR;
 
-        err_code = drv_ccs811_hw_version_get(p_hw_version);
-        RETURN_IF_ERROR(err_code);
-        CCS811_PRINT_IF_SENSOR_ERROR;
+    err_code = drv_ccs811_hw_version_get(p_hw_version);
+    RETURN_IF_ERROR(err_code);
+    CCS811_PRINT_IF_SENSOR_ERROR;
 
-        err_code = drv_ccs811_fw_boot_version_get(p_fw_boot_version);
-        RETURN_IF_ERROR(err_code);
-        CCS811_PRINT_IF_SENSOR_ERROR;
+    err_code = drv_ccs811_fw_boot_version_get(p_fw_boot_version);
+    RETURN_IF_ERROR(err_code);
+    CCS811_PRINT_IF_SENSOR_ERROR;
 
-        err_code = drv_ccs811_fw_app_version_get(p_fw_app_version);
-        RETURN_IF_ERROR(err_code);
-        CCS811_PRINT_IF_SENSOR_ERROR;
+    err_code = drv_ccs811_fw_app_version_get(p_fw_app_version);
+    RETURN_IF_ERROR(err_code);
+    CCS811_PRINT_IF_SENSOR_ERROR;
 
-        err_code = ccs811_close();
-        RETURN_IF_ERROR(err_code);
+    err_code = ccs811_close();
+    RETURN_IF_ERROR(err_code);
 
-        return NRF_SUCCESS;
-    }
+    return NRF_SUCCESS;
+}
 #endif
-
 
 /**@brief Get result from gas sensor.
  */
-static void gpiote_evt_sceduled(void * p_event_data, uint16_t event_size)
+static void gpiote_evt_sceduled(void *p_event_data, uint16_t event_size)
 {
-    ret_code_t                      err_code;
-    drv_ccs811_alg_result_descr_t   result_descr = DRV_CCS811_ALG_RESULT_DESCR_ALL;
-    static drv_ccs811_alg_result_t  s_result;
+    ret_code_t err_code;
+    drv_ccs811_alg_result_descr_t result_descr = DRV_CCS811_ALG_RESULT_DESCR_ALL;
+    static drv_ccs811_alg_result_t s_result;
 
-    LOG(LVL_DEBUG,"Gas sensor pin interrupt detected. \r\n");
+    LOG(LVL_DEBUG, "Gas sensor pin interrupt detected. \r\n");
 
     err_code = ccs811_open();
     APP_ERROR_CHECK(err_code);
 
     err_code = drv_ccs811_alg_result_data_get(result_descr, &s_result);
-    
+
     APP_ERROR_CHECK(err_code);
     CCS811_PRINT_IF_SENSOR_ERROR;
 
@@ -223,20 +221,19 @@ static void gpiote_evt_sceduled(void * p_event_data, uint16_t event_size)
  */
 drv_ccs811_alg_result_t get_gas_sensor_values()
 {
-    ret_code_t                      err_code;
-    drv_ccs811_alg_result_descr_t   result_descr = DRV_CCS811_ALG_RESULT_DESCR_ALL;
-    static drv_ccs811_alg_result_t  s_result;
+    ret_code_t err_code;
+    drv_ccs811_alg_result_descr_t result_descr = DRV_CCS811_ALG_RESULT_DESCR_ALL;
+    static drv_ccs811_alg_result_t s_result;
     err_code = ccs811_open();
-    //APP_ERROR_CHECK(err_code);
+    // APP_ERROR_CHECK(err_code);
 
     err_code = drv_ccs811_alg_result_data_get(result_descr, &s_result);
-    LOG(LVL_DEBUG,"gas_data_handler eCO2:, %d, - TVOC:, %d,\r\n", s_result.ec02_ppm,s_result.tvoc_ppb);
-    //APP_ERROR_CHECK(err_code);
+    LOG(LVL_DEBUG, "gas_data_handler eCO2:, %d, - TVOC:, %d,\r\n", s_result.ec02_ppm, s_result.tvoc_ppb);
+    // APP_ERROR_CHECK(err_code);
     err_code = ccs811_close();
-    //APP_ERROR_CHECK(err_code);
+    // APP_ERROR_CHECK(err_code);
     return s_result;
 }
-
 
 /**@brief GPIOTE event handler for gas sensor. Called when the gas sensor signals a pin interrupt (sample finished).
  */
@@ -250,7 +247,6 @@ static void gpiote_evt_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t a
         APP_ERROR_CHECK(err_code);
     }
 }
-
 
 /**@brief Initlialize the GPIOTE for capturing gas sensor pin interrupts.
  */
@@ -266,10 +262,10 @@ static ret_code_t gpiote_init(uint32_t pin)
 
     nrf_drv_gpiote_in_config_t gpiote_in_config;
 
-    gpiote_in_config.is_watcher  = false;
+    gpiote_in_config.is_watcher = false;
     gpiote_in_config.hi_accuracy = false;
-    gpiote_in_config.pull        = NRF_GPIO_PIN_PULLUP;
-    gpiote_in_config.sense       = NRF_GPIOTE_POLARITY_TOGGLE;
+    gpiote_in_config.pull = NRF_GPIO_PIN_PULLUP;
+    gpiote_in_config.sense = NRF_GPIOTE_POLARITY_TOGGLE;
     err_code = nrf_drv_gpiote_in_init(pin, &gpiote_in_config, gpiote_evt_handler);
     RETURN_IF_ERROR(err_code);
 
@@ -283,15 +279,13 @@ static ret_code_t gpiote_uninit(uint32_t pin)
     nrf_drv_gpiote_in_uninit(pin);
 
     return NRF_SUCCESS;
-
 }
-
 
 /**@brief Configures the IO pins of the host controller.
  */
 static ret_code_t io_pins_init(void)
 {
-    ret_code_t    err_code;
+    ret_code_t err_code;
 
     err_code = drv_ext_gpio_cfg_output(SX_CCS_PWR_CTRL);
     RETURN_IF_ERROR(err_code);
@@ -302,15 +296,19 @@ static ret_code_t io_pins_init(void)
     err_code = drv_ext_gpio_cfg_output(SX_CCS_WAKE);
     RETURN_IF_ERROR(err_code);
 
-    #if defined(THINGY_HW_v0_7_0)
-        while (drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL) != NRF_SUCCESS);
-    #elif defined(THINGY_HW_v0_8_0)
-        while (drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL) != NRF_SUCCESS);
-    #elif defined(THINGY_HW_v0_9_0)
-        while (drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL) != NRF_SUCCESS);
-    #else
-        while (drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL)   != NRF_SUCCESS);
-    #endif
+#if defined(THINGY_HW_v0_7_0)
+    while (drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL) != NRF_SUCCESS)
+        ;
+#elif defined(THINGY_HW_v0_8_0)
+    while (drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL) != NRF_SUCCESS)
+        ;
+#elif defined(THINGY_HW_v0_9_0)
+    while (drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL) != NRF_SUCCESS)
+        ;
+#else
+    while (drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL) != NRF_SUCCESS)
+        ;
+#endif
 
     err_code = drv_ext_gpio_pin_set(SX_CCS_RESET);
     RETURN_IF_ERROR(err_code);
@@ -323,7 +321,6 @@ static ret_code_t io_pins_init(void)
     return NRF_SUCCESS;
 }
 
-
 ret_code_t drv_gas_sensor_calibrate_humid_temp(uint16_t rh_ppth, int32_t temp_mdeg)
 {
     ret_code_t err_code;
@@ -332,7 +329,7 @@ ret_code_t drv_gas_sensor_calibrate_humid_temp(uint16_t rh_ppth, int32_t temp_md
     RETURN_IF_ERROR(err_code);
 
     err_code = drv_ccs811_env_data_set(rh_ppth, temp_mdeg);
-    
+
     RETURN_IF_ERROR(err_code);
     CCS811_PRINT_IF_SENSOR_ERROR;
 
@@ -342,8 +339,7 @@ ret_code_t drv_gas_sensor_calibrate_humid_temp(uint16_t rh_ppth, int32_t temp_md
     return NRF_SUCCESS;
 }
 
-
-ret_code_t drv_gas_sensor_baseline_get(uint16_t * p_baseline)
+ret_code_t drv_gas_sensor_baseline_get(uint16_t *p_baseline)
 {
     ret_code_t err_code;
 
@@ -361,7 +357,6 @@ ret_code_t drv_gas_sensor_baseline_get(uint16_t * p_baseline)
 
     return NRF_SUCCESS;
 }
-
 
 ret_code_t drv_gas_sensor_baseline_set(uint16_t baseline)
 {
@@ -382,8 +377,7 @@ ret_code_t drv_gas_sensor_baseline_set(uint16_t baseline)
     return NRF_SUCCESS;
 }
 
-
-ret_code_t drv_gas_sensor_raw_data_get(uint8_t * p_current_selected, uint16_t * p_raw_adc_reading)
+ret_code_t drv_gas_sensor_raw_data_get(uint8_t *p_current_selected, uint16_t *p_raw_adc_reading)
 {
     ret_code_t err_code;
     err_code = ccs811_open();
@@ -399,18 +393,18 @@ ret_code_t drv_gas_sensor_raw_data_get(uint8_t * p_current_selected, uint16_t * 
     *p_current_selected = (raw_data >> DRV_CCS811_RAW_DATA_CURRSEL_Pos);
     *p_raw_adc_reading = (raw_data & DRV_CCS811_RAW_DATA_RAWADC_Msk);
 
-    LOG(LVL_DEBUG,"Gas sensor raw data get. Current: %d [uA], ADC read: %d \r\n", *p_current_selected, *p_raw_adc_reading);
+    LOG(LVL_DEBUG, "Gas sensor raw data get. Current: %d [uA], ADC read: %d \r\n", *p_current_selected,
+        *p_raw_adc_reading);
 
     return NRF_SUCCESS;
 }
 
-
 ret_code_t drv_gas_sensor_start(drv_gas_sensor_mode_t mode)
-{   
-    ret_code_t  err_code;
-    uint8_t     status;
-    uint8_t     meas_mode_reg;
-    uint8_t     drive_mode = DRV_CCS811_MEAS_MODE_DRIVE_MODE_Idle;
+{
+    ret_code_t err_code;
+    uint8_t status;
+    uint8_t meas_mode_reg;
+    uint8_t drive_mode = DRV_CCS811_MEAS_MODE_DRIVE_MODE_Idle;
 
     if (m_started)
     {
@@ -421,34 +415,38 @@ ret_code_t drv_gas_sensor_start(drv_gas_sensor_mode_t mode)
 
     switch (mode)
     {
-        case DRV_GAS_SENSOR_MODE_250MS:
-            return NRF_ERROR_NOT_SUPPORTED;
-        case DRV_GAS_SENSOR_MODE_1S:
-            drive_mode = DRV_CCS811_MEAS_MODE_DRIVE_MODE_ConstPwr;
-            break;
-        case DRV_GAS_SENSOR_MODE_10S:
-            drive_mode = DRV_CCS811_MEAS_MODE_DRIVE_MODE_PulseHeat;
-            break;
-        case DRV_GAS_SENSOR_MODE_60S:
-            drive_mode = DRV_CCS811_MEAS_MODE_DRIVE_MODE_LowPwrPulseHeat;
-            break;
-        default:
-            return NRF_ERROR_INVALID_PARAM;
+    case DRV_GAS_SENSOR_MODE_250MS:
+        return NRF_ERROR_NOT_SUPPORTED;
+    case DRV_GAS_SENSOR_MODE_1S:
+        drive_mode = DRV_CCS811_MEAS_MODE_DRIVE_MODE_ConstPwr;
+        break;
+    case DRV_GAS_SENSOR_MODE_10S:
+        drive_mode = DRV_CCS811_MEAS_MODE_DRIVE_MODE_PulseHeat;
+        break;
+    case DRV_GAS_SENSOR_MODE_60S:
+        drive_mode = DRV_CCS811_MEAS_MODE_DRIVE_MODE_LowPwrPulseHeat;
+        break;
+    default:
+        return NRF_ERROR_INVALID_PARAM;
     }
-    
+
     err_code = gpiote_init(CCS_INT);
     APP_ERROR_CHECK(err_code);
 
-    // Power on gas sensor.
-    #if defined(THINGY_HW_v0_7_0)
-        while (drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL) != NRF_SUCCESS);
-    #elif defined(THINGY_HW_v0_8_0)
-        while (drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL) != NRF_SUCCESS);
-    #elif defined(THINGY_HW_v0_9_0)
-        while (drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL) != NRF_SUCCESS);
-    #else
-        while (drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL)   != NRF_SUCCESS);
-    #endif
+// Power on gas sensor.
+#if defined(THINGY_HW_v0_7_0)
+    while (drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL) != NRF_SUCCESS)
+        ;
+#elif defined(THINGY_HW_v0_8_0)
+    while (drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL) != NRF_SUCCESS)
+        ;
+#elif defined(THINGY_HW_v0_9_0)
+    while (drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL) != NRF_SUCCESS)
+        ;
+#else
+    while (drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL) != NRF_SUCCESS)
+        ;
+#endif
 
     err_code = drv_ext_gpio_pin_clear(SX_CCS_WAKE);
     APP_ERROR_CHECK(err_code);
@@ -457,7 +455,7 @@ ret_code_t drv_gas_sensor_start(drv_gas_sensor_mode_t mode)
     APP_ERROR_CHECK(err_code);
 
     nrf_delay_ms(GAS_SENSOR_PWR_ON_DELAY_MS); // Allow the CCS811 to power up.
-    
+
     nrf_drv_gpiote_in_event_enable(CCS_INT, true);
 
     err_code = ccs811_open();
@@ -472,7 +470,7 @@ ret_code_t drv_gas_sensor_start(drv_gas_sensor_mode_t mode)
     CCS811_PRINT_IF_SENSOR_ERROR;
 
     if (!(status & DRV_CCS811_STATUS_FW_MODE_Msk))
-    {   
+    {
         return NRF_ERROR_INVALID_STATE;
     }
 
@@ -480,7 +478,7 @@ ret_code_t drv_gas_sensor_start(drv_gas_sensor_mode_t mode)
     {
         // Dummy readout
         drv_ccs811_alg_result_descr_t result_descr = DRV_CCS811_ALG_RESULT_DESCR_ALL;
-        drv_ccs811_alg_result_t       result;
+        drv_ccs811_alg_result_t result;
 
         err_code = drv_ccs811_alg_result_data_get(result_descr, &result);
         APP_ERROR_CHECK(err_code);
@@ -504,11 +502,10 @@ ret_code_t drv_gas_sensor_start(drv_gas_sensor_mode_t mode)
     return NRF_SUCCESS;
 }
 
-
 ret_code_t drv_gas_sensor_stop(void)
 {
-    ret_code_t  err_code;
-    uint8_t     status;
+    ret_code_t err_code;
+    uint8_t status;
 
     if (m_started == false)
     {
@@ -531,7 +528,8 @@ ret_code_t drv_gas_sensor_stop(void)
     if (status & DRV_CCS811_STATUS_FW_MODE_Msk) // Chech that the device is in "application mode" and not "boot mode".
     {
         // Disable interrupt and set idle mode.
-        err_code = drv_ccs811_meas_mode_modify(0, DRV_CCS811_MEAS_MODE_DRIVE_MODE_Msk | DRV_CCS811_MEAS_MODE_INTERRUPT_Msk);
+        err_code =
+            drv_ccs811_meas_mode_modify(0, DRV_CCS811_MEAS_MODE_DRIVE_MODE_Msk | DRV_CCS811_MEAS_MODE_INTERRUPT_Msk);
         RETURN_IF_ERROR(err_code);
         CCS811_PRINT_IF_SENSOR_ERROR;
     }
@@ -545,22 +543,22 @@ ret_code_t drv_gas_sensor_stop(void)
     err_code = drv_ext_gpio_pin_clear(SX_CCS_WAKE);
     RETURN_IF_ERROR(err_code);
 
-    // Power off gas sensor.
-    #if defined(THINGY_HW_v0_7_0)
-        err_code = drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL);
-    #elif defined(THINGY_HW_v0_8_0)
-        err_code = drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL);
-    #elif defined(THINGY_HW_v0_9_0)
-        err_code = drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL);
-    #else
-        err_code = drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL);
-    #endif
+// Power off gas sensor.
+#if defined(THINGY_HW_v0_7_0)
+    err_code = drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL);
+#elif defined(THINGY_HW_v0_8_0)
+    err_code = drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL);
+#elif defined(THINGY_HW_v0_9_0)
+    err_code = drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL);
+#else
+    err_code = drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL);
+#endif
     RETURN_IF_ERROR(err_code);
 
     return NRF_SUCCESS;
 }
 
-ret_code_t drv_gas_sensor_init(drv_gas_init_t * p_init)
+ret_code_t drv_gas_sensor_init(drv_gas_init_t *p_init)
 {
     ret_code_t err_code;
 
@@ -569,10 +567,10 @@ ret_code_t drv_gas_sensor_init(drv_gas_init_t * p_init)
     NULL_PARAM_CHECK(p_init->p_twi_cfg);
     NULL_PARAM_CHECK(p_init->data_handler);
 
-    m_drv_ccs811_cfg.p_twi_cfg      = p_init->p_twi_cfg;
+    m_drv_ccs811_cfg.p_twi_cfg = p_init->p_twi_cfg;
     m_drv_ccs811_cfg.p_twi_instance = p_init->p_twi_instance;
-    m_drv_ccs811_cfg.twi_addr       = p_init->twi_addr;
-    m_data_handler                  = p_init->data_handler;
+    m_drv_ccs811_cfg.twi_addr = p_init->twi_addr;
+    m_data_handler = p_init->data_handler;
 
     drv_ccs811_init();
 
@@ -585,17 +583,18 @@ ret_code_t drv_gas_sensor_init(drv_gas_init_t * p_init)
     err_code = valid_app_verify();
     RETURN_IF_ERROR(err_code);
 
-    #ifdef GAS_SENSOR_DEBUG // Print all info from the gas sensor.
-        uint8_t  hw_id;
-        uint8_t  hw_version;
-        uint16_t fw_boot_version;
-        uint16_t fw_app_version;
+#ifdef GAS_SENSOR_DEBUG // Print all info from the gas sensor.
+    uint8_t hw_id;
+    uint8_t hw_version;
+    uint16_t fw_boot_version;
+    uint16_t fw_app_version;
 
-        err_code = gas_sensor_info_get(&hw_id, &hw_version, &fw_boot_version, &fw_app_version);
-        RETURN_IF_ERROR(err_code);
+    err_code = gas_sensor_info_get(&hw_id, &hw_version, &fw_boot_version, &fw_app_version);
+    RETURN_IF_ERROR(err_code);
 
-        NRF_LOG_DEBUG(" HW ID: 0x%x, HW version: 0x%x, FW boot version: 0x%x, FW app version: 0x%x \r\n", hw_id, hw_version, fw_boot_version, fw_app_version);
-    #endif
+    NRF_LOG_DEBUG(" HW ID: 0x%x, HW version: 0x%x, FW boot version: 0x%x, FW app version: 0x%x \r\n", hw_id, hw_version,
+                  fw_boot_version, fw_app_version);
+#endif
 
     err_code = drv_ext_gpio_pin_clear(SX_CCS_RESET);
     RETURN_IF_ERROR(err_code);
@@ -603,15 +602,15 @@ ret_code_t drv_gas_sensor_init(drv_gas_init_t * p_init)
     err_code = drv_ext_gpio_pin_clear(SX_CCS_WAKE);
     RETURN_IF_ERROR(err_code);
 
-    #if defined(THINGY_HW_v0_7_0)
-        err_code = drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL);
-    #elif defined(THINGY_HW_v0_8_0)
-        err_code = drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL);
-    #elif defined(THINGY_HW_v0_9_0)
-        err_code = drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL);
-    #else
-        err_code = drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL);
-    #endif
+#if defined(THINGY_HW_v0_7_0)
+    err_code = drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL);
+#elif defined(THINGY_HW_v0_8_0)
+    err_code = drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL);
+#elif defined(THINGY_HW_v0_9_0)
+    err_code = drv_ext_gpio_pin_set(SX_CCS_PWR_CTRL);
+#else
+    err_code = drv_ext_gpio_pin_clear(SX_CCS_PWR_CTRL);
+#endif
     RETURN_IF_ERROR(err_code);
 
     return NRF_SUCCESS;
