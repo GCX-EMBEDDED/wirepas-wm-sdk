@@ -37,28 +37,28 @@
  */
 
 #include "drv_hts221.h"
-#include "twi_manager.h"
 #include "nrf_error.h"
-#define  NRF_LOG_MODULE_NAME "drv_hts221    "
-#include "nrf_log.h"
+#include "twi_manager.h"
+#define NRF_LOG_MODULE_NAME "drv_hts221    "
 #include "macros_common.h"
+#include "nrf_log.h"
 
 /**@brief Check if the driver is open, if not return NRF_ERROR_INVALID_STATE.
  */
-#define DRV_CFG_CHECK(PARAM)                                                                      \
-        if ((PARAM) == NULL)                                                                      \
-        {                                                                                         \
-            return NRF_ERROR_INVALID_STATE;                                                       \
-        }
+#define DRV_CFG_CHECK(PARAM)                                                                                           \
+    if ((PARAM) == NULL)                                                                                               \
+    {                                                                                                                  \
+        return NRF_ERROR_INVALID_STATE;                                                                                \
+    }
 
-#define AV_CONF_RESERVED_BITS   (0xC0) ///< Reserved bits in the AV_CONF register.
+#define AV_CONF_RESERVED_BITS (0xC0)   ///< Reserved bits in the AV_CONF register.
 #define CTRL_REG1_RESERVED_BITS (0x78) ///< Reserved bits in the CTRL_REG1 register.
 #define CTRL_REG2_RESERVED_BITS (0x7C) ///< Reserved bits in the CTRL_REG2 register.
 #define CTRL_REG3_RESERVED_BITS (0x3B) ///< Reserved bits in the CTRL_REG3 register.
 
 static struct
 {
-    drv_hts221_twi_cfg_t const * p_cfg;
+    drv_hts221_twi_cfg_t const *p_cfg;
 } m_hts221;
 
 /**@brief Function to init the TWI module when this driver needs to communicate on the TWI bus.
@@ -67,17 +67,13 @@ static __inline uint32_t twi_open(void)
 {
     uint32_t err_code;
 
-    err_code = twi_manager_request(m_hts221.p_cfg->p_twi_instance,
-                                   m_hts221.p_cfg->p_twi_config,
-                                   NULL,
-                                   NULL);
+    err_code = twi_manager_request(m_hts221.p_cfg->p_twi_instance, m_hts221.p_cfg->p_twi_config, NULL, NULL);
     RETURN_IF_ERROR(err_code);
 
     nrf_drv_twi_enable(m_hts221.p_cfg->p_twi_instance);
 
     return NRF_SUCCESS;
 }
-
 
 /**@brief Function to deinit the TWI module when this driver does not need to
  *        communicate on the TWI bus, so that other drivers can use the module.
@@ -91,7 +87,6 @@ static __inline uint32_t twi_close(void)
     return NRF_SUCCESS;
 }
 
-
 /**@brief Function for reading a sensor register.
  *
  * @param[in]  reg_addr            Address of the register to read.
@@ -100,26 +95,18 @@ static __inline uint32_t twi_close(void)
  * @retval NRF_SUCCESS             If operation was successful.
  * @retval NRF_ERROR_BUSY          If the TWI drivers are busy.
  */
-static uint32_t reg_read(uint8_t reg_addr, uint8_t * p_reg_val)
+static uint32_t reg_read(uint8_t reg_addr, uint8_t *p_reg_val)
 {
     uint32_t err_code;
 
-    err_code = nrf_drv_twi_tx( m_hts221.p_cfg->p_twi_instance,
-                               m_hts221.p_cfg->twi_addr,
-                               &reg_addr,
-                               1,
-                               true );
+    err_code = nrf_drv_twi_tx(m_hts221.p_cfg->p_twi_instance, m_hts221.p_cfg->twi_addr, &reg_addr, 1, true);
     RETURN_IF_ERROR(err_code);
 
-    err_code = nrf_drv_twi_rx( m_hts221.p_cfg->p_twi_instance,
-                               m_hts221.p_cfg->twi_addr,
-                               p_reg_val,
-                               1 );
+    err_code = nrf_drv_twi_rx(m_hts221.p_cfg->p_twi_instance, m_hts221.p_cfg->twi_addr, p_reg_val, 1);
     RETURN_IF_ERROR(err_code);
 
     return NRF_SUCCESS;
 }
-
 
 /**@brief Function for writing to a sensor register.
  *
@@ -134,16 +121,11 @@ static uint32_t reg_write(uint8_t reg_addr, uint8_t reg_val)
     uint32_t err_code;
     uint8_t buffer[2] = {reg_addr, reg_val};
 
-    err_code = nrf_drv_twi_tx( m_hts221.p_cfg->p_twi_instance,
-                               m_hts221.p_cfg->twi_addr,
-                               buffer,
-                               2,
-                               false );
+    err_code = nrf_drv_twi_tx(m_hts221.p_cfg->p_twi_instance, m_hts221.p_cfg->twi_addr, buffer, 2, false);
     RETURN_IF_ERROR(err_code);
 
     return NRF_SUCCESS;
 }
-
 
 /**@brief Function for reading multiple sensor registers.
  *
@@ -154,7 +136,7 @@ static uint32_t reg_write(uint8_t reg_addr, uint8_t reg_val)
  * @retval NRF_SUCCESS         If operation was successful.
  * @retval NRF_ERROR_BUSY      If the TWI drivers are busy.
  */
-static uint32_t buf_read(uint8_t reg_addr, uint8_t * p_buf, uint32_t size)
+static uint32_t buf_read(uint8_t reg_addr, uint8_t *p_buf, uint32_t size)
 {
     uint32_t err_code;
 
@@ -167,14 +149,12 @@ static uint32_t buf_read(uint8_t reg_addr, uint8_t * p_buf, uint32_t size)
     return NRF_SUCCESS;
 }
 
-
-uint32_t drv_hts221_open(drv_hts221_twi_cfg_t const * const p_cfg)
+uint32_t drv_hts221_open(drv_hts221_twi_cfg_t const *const p_cfg)
 {
     m_hts221.p_cfg = p_cfg;
 
     return twi_open();
 }
-
 
 uint32_t drv_hts221_close(void)
 {
@@ -184,7 +164,6 @@ uint32_t drv_hts221_close(void)
 
     return err_code;
 }
-
 
 uint32_t drv_hts221_verify(void)
 {
@@ -199,18 +178,15 @@ uint32_t drv_hts221_verify(void)
     return (reg_val == WHO_AM_I_VAL) ? NRF_SUCCESS : NRF_ERROR_NOT_FOUND;
 }
 
-
-uint32_t drv_hts221_cfg_set(drv_hts221_cfg_t const * const p_cfg)
+uint32_t drv_hts221_cfg_set(drv_hts221_cfg_t const *const p_cfg)
 {
     uint32_t err_code;
 
     DRV_CFG_CHECK(m_hts221.p_cfg);
     NULL_PARAM_CHECK(p_cfg);
 
-    if ( (p_cfg->av_conf   & AV_CONF_RESERVED_BITS  ) ||
-         (p_cfg->ctrl_reg1 & CTRL_REG1_RESERVED_BITS) ||
-         (p_cfg->ctrl_reg2 & CTRL_REG2_RESERVED_BITS) ||
-         (p_cfg->ctrl_reg3 & CTRL_REG3_RESERVED_BITS) )
+    if ((p_cfg->av_conf & AV_CONF_RESERVED_BITS) || (p_cfg->ctrl_reg1 & CTRL_REG1_RESERVED_BITS) ||
+        (p_cfg->ctrl_reg2 & CTRL_REG2_RESERVED_BITS) || (p_cfg->ctrl_reg3 & CTRL_REG3_RESERVED_BITS))
     {
         return NRF_ERROR_INVALID_PARAM;
     }
@@ -230,8 +206,7 @@ uint32_t drv_hts221_cfg_set(drv_hts221_cfg_t const * const p_cfg)
     return NRF_SUCCESS;
 }
 
-
-uint32_t drv_hts221_cfg_get(drv_hts221_cfg_t *  p_cfg)
+uint32_t drv_hts221_cfg_get(drv_hts221_cfg_t *p_cfg)
 {
     uint32_t err_code;
 
@@ -253,8 +228,7 @@ uint32_t drv_hts221_cfg_get(drv_hts221_cfg_t *  p_cfg)
     return NRF_SUCCESS;
 }
 
-
-uint32_t drv_hts221_status_get(uint8_t * p_status)
+uint32_t drv_hts221_status_get(uint8_t *p_status)
 {
     uint32_t err_code;
 
@@ -267,11 +241,10 @@ uint32_t drv_hts221_status_get(uint8_t * p_status)
     return NRF_SUCCESS;
 }
 
-
-uint32_t drv_hts221_calib_get(drv_hts221_calib_t * p_calib)
+uint32_t drv_hts221_calib_get(drv_hts221_calib_t *p_calib)
 {
     uint32_t err_code;
-    uint8_t  calib_raw[CALIBRATION_REGS_NUM];
+    uint8_t calib_raw[CALIBRATION_REGS_NUM];
 
     DRV_CFG_CHECK(m_hts221.p_cfg);
     NULL_PARAM_CHECK(p_calib);
@@ -279,24 +252,23 @@ uint32_t drv_hts221_calib_get(drv_hts221_calib_t * p_calib)
     err_code = buf_read(CALIBRATION_REGS, calib_raw, CALIBRATION_REGS_NUM);
     RETURN_IF_ERROR(err_code);
 
-    p_calib->H0_rH_x2   = calib_raw[0];
-    p_calib->H1_rH_x2   = calib_raw[1];
+    p_calib->H0_rH_x2 = calib_raw[0];
+    p_calib->H1_rH_x2 = calib_raw[1];
     p_calib->T0_degC_x8 = (uint16_t)calib_raw[2] + ((uint16_t)(calib_raw[5] & 0x03) << 8);
     p_calib->T1_degC_x8 = (uint16_t)calib_raw[3] + ((uint16_t)((calib_raw[5] >> 2) & 0x03) << 8);
-    p_calib->H0_T0_OUT  = (int16_t)calib_raw[6]  + ((int16_t)calib_raw[7]  << 8);
-    p_calib->H1_T0_OUT  = (int16_t)calib_raw[10] + ((int16_t)calib_raw[11] << 8);
-    p_calib->T0_OUT     = (int16_t)calib_raw[12] + ((int16_t)calib_raw[13] << 8);
-    p_calib->T1_OUT     = (int16_t)calib_raw[14] + ((int16_t)calib_raw[15] << 8);
+    p_calib->H0_T0_OUT = (int16_t)calib_raw[6] + ((int16_t)calib_raw[7] << 8);
+    p_calib->H1_T0_OUT = (int16_t)calib_raw[10] + ((int16_t)calib_raw[11] << 8);
+    p_calib->T0_OUT = (int16_t)calib_raw[12] + ((int16_t)calib_raw[13] << 8);
+    p_calib->T1_OUT = (int16_t)calib_raw[14] + ((int16_t)calib_raw[15] << 8);
 
     return NRF_SUCCESS;
 }
 
-
-uint32_t drv_hts221_humidity_get(int16_t * p_humidity)
+uint32_t drv_hts221_humidity_get(int16_t *p_humidity)
 {
     uint32_t err_code;
-    uint8_t  humid_h;
-    uint8_t  humid_l;
+    uint8_t humid_h;
+    uint8_t humid_l;
 
     DRV_CFG_CHECK(m_hts221.p_cfg);
     NULL_PARAM_CHECK(p_humidity);
@@ -312,12 +284,11 @@ uint32_t drv_hts221_humidity_get(int16_t * p_humidity)
     return NRF_SUCCESS;
 }
 
-
-uint32_t drv_hts221_temperature_get(int16_t * p_temperature)
+uint32_t drv_hts221_temperature_get(int16_t *p_temperature)
 {
     uint32_t err_code;
-    uint8_t  temp_h;
-    uint8_t  temp_l;
+    uint8_t temp_h;
+    uint8_t temp_l;
 
     DRV_CFG_CHECK(m_hts221.p_cfg);
     NULL_PARAM_CHECK(p_temperature);
@@ -332,7 +303,6 @@ uint32_t drv_hts221_temperature_get(int16_t * p_temperature)
 
     return NRF_SUCCESS;
 }
-
 
 uint32_t drv_hts221_one_shot(void)
 {
@@ -357,7 +327,6 @@ uint32_t drv_hts221_one_shot(void)
     return NRF_SUCCESS;
 }
 
-
 uint32_t drv_hts221_reboot(void)
 {
     uint32_t err_code;
@@ -380,7 +349,6 @@ uint32_t drv_hts221_reboot(void)
 
     return NRF_SUCCESS;
 }
-
 
 uint32_t drv_hts221_init(void)
 {

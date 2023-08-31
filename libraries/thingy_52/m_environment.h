@@ -36,7 +36,7 @@
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /** @file Environment module
+/** @file Environment module
  *
  * @defgroup m_environment Environment
  * @{
@@ -48,27 +48,25 @@
 #ifndef __ENVIRONMENT_H__
 #define __ENVIRONMENT_H__
 
-#include <stdint.h>
-#include <stdbool.h>
 #include "nrf_drv_twi.h"
+#include <stdbool.h>
+#include <stdint.h>
 
-#define PACKED(TYPE) TYPE __attribute__ ((packed))
+#define PACKED(TYPE) TYPE __attribute__((packed))
 
 /**@brief Initialization parameters. */
 typedef struct
 {
-    const nrf_drv_twi_t * p_twi_instance;
+    const nrf_drv_twi_t *p_twi_instance;
 } m_environment_init_t;
 
-typedef PACKED( struct
-{
-    uint32_t                temperature_interval_ms;
-    uint32_t                humidity_interval_ms;
+typedef PACKED(struct {
+    uint32_t temperature_interval_ms;
+    uint32_t humidity_interval_ms;
 }) env_config;
 
-typedef PACKED( struct
-{
-    int8_t  integer;
+typedef PACKED(struct {
+    int8_t integer;
     uint8_t decimal;
 }) temperature_t;
 
@@ -89,7 +87,7 @@ uint8_t get_humidity(void);
  *
  * @retval NRF_SUCCESS  If initialization was successful.
  */
-uint32_t m_environment_init(m_environment_init_t * p_params);
+uint32_t m_environment_init(m_environment_init_t *p_params);
 
 uint32_t calibrate_gas_sensor(uint16_t humid, float temp);
 

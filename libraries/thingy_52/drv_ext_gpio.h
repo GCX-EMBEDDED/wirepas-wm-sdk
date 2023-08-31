@@ -48,54 +48,54 @@
 #ifndef __DRV_EXT_GPIO_H__
 #define __DRV_EXT_GPIO_H__
 
-#include <stdint.h>
-#include "nrf_error.h"
 #include "drv_sx1509.h"
+#include "nrf_error.h"
+#include <stdint.h>
 
 /**@brief GPIO extender status codes.
  */
 enum
 {
-    DRV_EXT_GPIO_STATUS_CODE_SUCCESS = NRF_SUCCESS,  ///< Successfull.
-    DRV_EXT_GPIO_STATUS_CODE_INVALID_PARAM,          ///< Invalid parameters.
-    DRV_EXT_GPIO_STATUS_CODE_INVALID_PIN             ///< Invalid GPIO pin or pin mask selected.
+    DRV_EXT_GPIO_STATUS_CODE_SUCCESS = NRF_SUCCESS, ///< Successfull.
+    DRV_EXT_GPIO_STATUS_CODE_INVALID_PARAM,         ///< Invalid parameters.
+    DRV_EXT_GPIO_STATUS_CODE_INVALID_PIN            ///< Invalid GPIO pin or pin mask selected.
 };
 
-#define DRV_EXT_GPIO_PIN_HIGHEST_ID DRV_SX1509_DATA_PIN15_Pos           ///< Highest pin ID.
-#define DRV_EXT_GPIO_NUM_PINS_TOTAL (DRV_EXT_GPIO_PIN_HIGHEST_ID + 1)   ///< Number of pins total.
+#define DRV_EXT_GPIO_PIN_HIGHEST_ID DRV_SX1509_DATA_PIN15_Pos         ///< Highest pin ID.
+#define DRV_EXT_GPIO_NUM_PINS_TOTAL (DRV_EXT_GPIO_PIN_HIGHEST_ID + 1) ///< Number of pins total.
 
 /**@brief Pin direction definitions.
  */
 typedef enum
 {
-    DRV_EXT_GPIO_PIN_DIR_OUTPUT,    ///< Output.
-    DRV_EXT_GPIO_PIN_DIR_INPUT      ///< Input.
+    DRV_EXT_GPIO_PIN_DIR_OUTPUT, ///< Output.
+    DRV_EXT_GPIO_PIN_DIR_INPUT   ///< Input.
 } drv_ext_gpio_pin_dir_t;
 
 /**@brief Connection of input buffer.
  */
 typedef enum
 {
-    DRV_EXT_GPIO_PIN_INPUT_BUF_ENABLED,   ///< Connect input buffer.
-    DRV_EXT_GPIO_PIN_INPUT_BUF_DISABLED   ///< Disconnect input buffer.
+    DRV_EXT_GPIO_PIN_INPUT_BUF_ENABLED, ///< Connect input buffer.
+    DRV_EXT_GPIO_PIN_INPUT_BUF_DISABLED ///< Disconnect input buffer.
 } drv_ext_gpio_pin_input_buf_t;
 
 /**@brief Pin to be pulled down, up, or no-pull.
  */
 typedef enum
 {
-    DRV_EXT_GPIO_PIN_NOPULL,    ///< No pin pullup or pulldown.
-    DRV_EXT_GPIO_PIN_PULLDOWN,  ///< Pin pulldown resistor enabled.
-    DRV_EXT_GPIO_PIN_PULLUP     ///< Pin pullup resistor enabled.
+    DRV_EXT_GPIO_PIN_NOPULL,   ///< No pin pullup or pulldown.
+    DRV_EXT_GPIO_PIN_PULLDOWN, ///< Pin pulldown resistor enabled.
+    DRV_EXT_GPIO_PIN_PULLUP    ///< Pin pullup resistor enabled.
 } drv_ext_gpio_pin_pull_t;
 
 /**@brief Push-pull or open drain operation.
  */
 typedef enum
 {
-    DRV_EXT_GPIO_PIN_DRIVE_PUSHPULL,    ///< Standard push-pull operation.
-    DRV_EXT_GPIO_PIN_DRIVE_OPENDRAIN    ///< Open drain.
-}drv_ext_gpio_pin_drive_type_t;
+    DRV_EXT_GPIO_PIN_DRIVE_PUSHPULL, ///< Standard push-pull operation.
+    DRV_EXT_GPIO_PIN_DRIVE_OPENDRAIN ///< Open drain.
+} drv_ext_gpio_pin_drive_type_t;
 
 /**@brief Regular or increased slew rate.
  */
@@ -103,7 +103,7 @@ typedef enum
 {
     DRV_EXT_GPIO_PIN_INCREASED_SLEWRATE_DISABLED, ///< No slew rate alteration.
     DRV_EXT_GPIO_PIN_INCREASED_SLEWRATE_ENABLED   ///< Increased slew rate.
-}drv_ext_gpio_pin_slew_rate_t;
+} drv_ext_gpio_pin_slew_rate_t;
 
 /**@brief Pin configuration function.
  *
@@ -122,19 +122,15 @@ typedef enum
  * @return DRV_EXT_GPIO_STATUS_CODE_INVALID_PIN     Pin number not available.
  * @return Other codes from the underlying driver.
  */
-uint32_t drv_ext_gpio_cfg(
-    uint32_t                      pin_number,
-    drv_ext_gpio_pin_dir_t        dir,
-    drv_ext_gpio_pin_input_buf_t  input_buf,
-    drv_ext_gpio_pin_pull_t       pull_config,
-    drv_ext_gpio_pin_drive_type_t drive_type,
-    drv_ext_gpio_pin_slew_rate_t  slew_rate);
+uint32_t drv_ext_gpio_cfg(uint32_t pin_number, drv_ext_gpio_pin_dir_t dir, drv_ext_gpio_pin_input_buf_t input_buf,
+                          drv_ext_gpio_pin_pull_t pull_config, drv_ext_gpio_pin_drive_type_t drive_type,
+                          drv_ext_gpio_pin_slew_rate_t slew_rate);
 
 /**@brief GPIO extender driver configuration.
  */
 typedef struct
 {
-    drv_sx1509_cfg_t const * p_cfg;
+    drv_sx1509_cfg_t const *p_cfg;
 } drv_ext_gpio_init_t;
 
 /**@brief Function for resetting all the registers of the GPIO extender to their default values.
@@ -163,7 +159,8 @@ uint32_t drv_ext_gpio_reset(void);
  */
 uint32_t drv_ext_gpio_reg_data_init(uint32_t data);
 
-/**@brief Function for configuring the given GPIO pin_number as output with given initial value set, hiding inner details.
+/**@brief Function for configuring the given GPIO pin_number as output with given initial value set, hiding inner
+ * details.
  *
  * @param[in] pin_number    The pin number (allowed values 0-DRV_EXT_GPIO_PIN_HIGHEST_ID).
  *
@@ -173,7 +170,8 @@ uint32_t drv_ext_gpio_reg_data_init(uint32_t data);
  */
 uint32_t drv_ext_gpio_cfg_output(uint32_t pin_number);
 
-/**@brief Function for configuring the given GPIO pin number as input with given initial value set, hiding inner details.
+/**@brief Function for configuring the given GPIO pin number as input with given initial value set, hiding inner
+ * details.
  *
  * @param[in] pin_number    The pin number (allowed values 0-DRV_EXT_GPIO_PIN_HIGHEST_ID).
  * @param[in] pull_config   State of the pin range pull resistor (no pull, pulled down, or pulled high).
@@ -334,7 +332,7 @@ uint32_t drv_ext_gpio_pin_write(uint32_t pin_number, uint32_t value);
  * @return DRV_EXT_GPIO_STATUS_CODE_INVALID_PIN     Pin number not available.
  * @return Other codes from the underlying driver.
  */
-uint32_t drv_ext_gpio_pin_read(uint32_t pin_number, uint32_t * const p_pin);
+uint32_t drv_ext_gpio_pin_read(uint32_t pin_number, uint32_t *const p_pin);
 
 /**@brief Function for reading the input level of all GPIO pins.
  *
@@ -347,7 +345,7 @@ uint32_t drv_ext_gpio_pin_read(uint32_t pin_number, uint32_t * const p_pin);
  * @return DRV_EXT_GPIO_STATUS_CODE_INVALID_PIN     Pin number not available.
  * @return Other codes from the underlying driver.
  */
-uint32_t drv_ext_gpio_pins_read(uint32_t * const p_pins);
+uint32_t drv_ext_gpio_pins_read(uint32_t *const p_pins);
 
 /**@brief Function for initializing the GPIO extender.
  *
@@ -358,7 +356,7 @@ uint32_t drv_ext_gpio_pins_read(uint32_t * const p_pins);
  * @return DRV_EXT_GPIO_STATUS_CODE_SUCCESS         If the call was successful.
  * @return Other codes from the underlying driver.
  */
-uint32_t drv_ext_gpio_init(drv_ext_gpio_init_t const * const p_init, bool on_init_reset);
+uint32_t drv_ext_gpio_init(drv_ext_gpio_init_t const *const p_init, bool on_init_reset);
 
 #endif
 

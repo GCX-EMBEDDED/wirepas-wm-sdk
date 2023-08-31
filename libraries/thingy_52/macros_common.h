@@ -36,7 +36,7 @@
   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /** @file Common macros
+/** @file Common macros
  *
  * @defgroup macros_common Common macros
  * @{
@@ -51,21 +51,21 @@
 
 /**@brief Check if the error code is equal to NRF_SUCCESS. If not, return the error code.
  */
-#define RETURN_IF_ERROR(err_code)                                                    \
-if ((err_code) != NRF_SUCCESS)                                                       \
-{                                                                                    \
-    NRF_LOG_WARNING("Err code returned in file: %s, line: %d, code %d \r\n",         \
-    nrf_log_push(__FILE__), __LINE__, err_code);                                     \
-    return (err_code);                                                               \
-}
+#define RETURN_IF_ERROR(err_code)                                                                                      \
+    if ((err_code) != NRF_SUCCESS)                                                                                     \
+    {                                                                                                                  \
+        NRF_LOG_WARNING("Err code returned in file: %s, line: %d, code %d \r\n", nrf_log_push(__FILE__), __LINE__,     \
+                        err_code);                                                                                     \
+        return (err_code);                                                                                             \
+    }
 
 /**@brief Check if the input pointer is NULL. If so, return NRF_ERROR_NULL.
  */
-#define NULL_PARAM_CHECK(param)         \
-        if ((param) == NULL)            \
-        {                               \
-            return NRF_ERROR_NULL;      \
-        }
+#define NULL_PARAM_CHECK(param)                                                                                        \
+    if ((param) == NULL)                                                                                               \
+    {                                                                                                                  \
+        return NRF_ERROR_NULL;                                                                                         \
+    }
 
 #endif /*__MACROS_COMMON_H__*/
 
