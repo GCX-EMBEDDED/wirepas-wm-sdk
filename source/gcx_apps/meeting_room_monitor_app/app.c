@@ -10,6 +10,7 @@
 #include "shared_data.h"
 #include "app_scheduler.h"
 #include "hal_api.h"
+#include "m_ui.h"
 
 #include "app_util_platform.h"
 #include "nrf_delay.h"
@@ -35,6 +36,8 @@
 #define EXECUTION_TIME_US 2500
 
 #define DATA_EP 1
+
+#define LED_ON_DURING_STARTUP_MS 1000
 
 /** Period to send measurements, in ms */
 static uint32_t period_ms;
@@ -101,6 +104,20 @@ static uint32_t send_data_task(void)
     return period_ms;
 }
 
+
+/**
+ * @brief   Task to switch off the LED
+ * @return  next period
+ */
+static uint32_t switch_off_led_task(void)
+{
+    (void) m_ui_set_color_led_lightwell(0, 0, 0 );
+    // Inform the stack that this function should be called again in
+    // period_ms microseconds. By returning APP_SCHEDULER_STOP_TASK,
+    // the stack won't call this function again.
+    return APP_SCHEDULER_STOP_TASK;
+}
+
 /**
  * \brief   Initialization callback for application
  *
@@ -129,8 +146,10 @@ void App_init(const app_global_functions_t *functions)
     lib_settings->setNodeRole(APP_LIB_SETTINGS_ROLE_AUTOROLE_LL);
 #endif
     board_init();
-    // APP_IRQ_PRIORITY_THREAD = 15
     twi_manager_init(APP_IRQ_PRIORITY_THREAD);
+    m_ui_init_t ui_params;
+    ui_params.p_twi_instance = &m_twi_sensors;
+    m_ui_init(&ui_params);
     m_environment_init_t     env_params;
     env_params.p_twi_instance = &m_twi_sensors;
     m_environment_init(&env_params);
@@ -151,6 +170,10 @@ void App_init(const app_global_functions_t *functions)
     gas_start();
     calibrated_gas_sensor = true;
     }
+    (void) m_ui_set_color_led_lightwell(255, 0, 0 );
+    App_Scheduler_addTask_execTime(switch_off_led_task,
+                                      LED_ON_DURING_STARTUP_MS,
+                                      EXECUTION_TIME_US);
 
     // Start the stack
     lib_state->startStack();
