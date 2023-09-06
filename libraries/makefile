@@ -93,5 +93,10 @@ include $(WP_LIB_PATH)dualmcu/waps/makefile
 include $(WP_LIB_PATH)dualmcu/drivers/makefile
 endif
 
+ifeq ($(HTS221), yes)
+SRCS += $(WP_LIB_PATH)hts221_driver/hts221.c
+INCLUDES += -I$(WP_LIB_PATH)hts221_driver
+endif
+
 SRCS += $(WP_LIB_PATH)libraries_init.c
 INCLUDES += -I$(WP_LIB_PATH)
