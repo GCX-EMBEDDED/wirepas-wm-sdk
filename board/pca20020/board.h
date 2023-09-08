@@ -94,7 +94,7 @@ SXIO15   SENSE_LED_B            Blue color of the color sensor support LED
 #define USE_I2C1
 #define BOARD_I2C_SDA_PIN 7
 #define BOARD_I2C_SCL_PIN 8
-
+#define HTS_INT 24
 #define VDD_PWD_CTRL 30
 
 // The board supports DCDC (#define BOARD_SUPPORT_DCDC)
