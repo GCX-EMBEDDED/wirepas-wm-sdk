@@ -55,6 +55,8 @@ struct env_data
     uint8_t temp_decimal;
     bool humi_to_send;
     int16_t humidity;
+    uint8_t movement_counter;
+    bool mov_count_to_send;
 };
 
 static struct env_data environmental_data;
@@ -67,7 +69,7 @@ static struct env_data environmental_data;
 static uint32_t send_data_task(void)
 {
     static uint32_t id = 0; // Value to send
-    static uint8_t buffer[6];
+    static uint8_t buffer[7];
 
     buffer[0] = MSG_ID_READING;
     buffer[1] = id;
@@ -75,6 +77,7 @@ static uint32_t send_data_task(void)
     buffer[3] = environmental_data.temp_decimal;
     buffer[4] = environmental_data.humidity;
     buffer[5] = (environmental_data.humidity >> 8);
+    buffer[6] = environmental_data.movement_counter;
 
     // Create a data packet to send
     app_lib_data_to_send_t data_to_send;
@@ -96,6 +99,7 @@ static uint32_t send_data_task(void)
 
     environmental_data.temp_to_send = false;
     environmental_data.humi_to_send = false;
+    environmental_data.mov_count_to_send = false;
     // Inform the stack that this function should be called again in
     // period_ms microseconds. By returning APP_SCHEDULER_STOP_TASK,
     // the stack won't call this function again.
@@ -127,11 +131,18 @@ void hts221_interrupt_handler(uint8_t pin, gpio_event_e event)
     environmental_data.humi_to_send = true;
 }
 
+void hw416_interrupt_handler(uint8_t pin, gpio_event_e event)
+{
+    LOG(LVL_DEBUG, "Movement has been detected!, Movement_counter=%u", ++environmental_data.movement_counter);
+    environmental_data.mov_count_to_send = true;
+}
+
 static uint32_t init_sensors(void)
 {
     htc221_init();
     hts221_enable();
     GPIO_register_for_event(24, GPIO_NOPULL, GPIO_EVENT_HL, 100, hts221_interrupt_handler);
+    GPIO_register_for_event(4, GPIO_NOPULL, GPIO_EVENT_LH, 10, hw416_interrupt_handler);
     return APP_SCHEDULER_STOP_TASK;
 }
 
