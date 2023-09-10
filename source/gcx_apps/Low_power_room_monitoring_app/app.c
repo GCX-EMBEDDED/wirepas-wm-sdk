@@ -18,6 +18,8 @@
 #include "board.h"
 #include "hts221.h"
 #include "gpio.h"
+#include "battery_measurement.h"
+#include "sx1509.h"
 
 #define DEBUG_LOG_MODULE_NAME "MEETING_ROOM_MONITOR_APP"
 /** To activate logs, configure the following line with "LVL_INFO". */
@@ -26,11 +28,17 @@
 #include "debug_log.h"
 
 /** Period to send data */
-#define DEFAULT_PERIOD_S 60
-#define DEFAULT_PERIOD_MS (DEFAULT_PERIOD_S * 1000)
+#define DEFAULT_SEND_PERIOD_S 60
+#define DEFAULT_SEND_PERIOD_MS (DEFAULT_SEND_PERIOD_S * 1000)
 
-/** Time needed to execute the periodic work, in us */
-#define EXECUTION_TIME_US 500
+/** Period to trigger sensors */
+#define DEFAULT_MEASURE_PERIOD_S 50
+#define DEFAULT_MEASURE_PERIOD_MS (DEFAULT_MEASURE_PERIOD_S * 1000)
+
+/** Max time needed to execute the periodic work, in us */
+#define EXECUTION_TIME_US 2500
+
+#define TASK_DELAY_TIME_MS 1000
 
 /** Endpoint to change the sending period value */
 #define SET_PERIOD_EP 10
@@ -40,13 +48,8 @@
 #define MSG_ID_READING 0
 
 /** Period to send measurements, in ms */
-static uint32_t period_ms;
-
-typedef struct __attribute__((packed))
-{
-    /** periodic message interval in milliseconds */
-    uint32_t period_ms;
-} payload_periodic_t;
+static uint32_t send_period_ms;
+static uint32_t measure_period_ms;
 
 struct env_data
 {
@@ -57,6 +60,8 @@ struct env_data
     int16_t humidity;
     uint8_t movement_counter;
     bool mov_count_to_send;
+    uint16_t voltage;
+    bool volt_to_send;
 };
 
 static struct env_data environmental_data;
@@ -69,15 +74,17 @@ static struct env_data environmental_data;
 static uint32_t send_data_task(void)
 {
     static uint32_t id = 0; // Value to send
-    static uint8_t buffer[7];
+    static uint8_t buffer[9];
 
     buffer[0] = MSG_ID_READING;
     buffer[1] = id;
-    buffer[2] = environmental_data.temp_integer;
-    buffer[3] = environmental_data.temp_decimal;
-    buffer[4] = environmental_data.humidity;
-    buffer[5] = (environmental_data.humidity >> 8);
-    buffer[6] = environmental_data.movement_counter;
+    buffer[2] = environmental_data.voltage;
+    buffer[3] = (environmental_data.voltage >> 8);
+    buffer[4] = environmental_data.temp_integer;
+    buffer[5] = environmental_data.temp_decimal;
+    buffer[6] = environmental_data.humidity;
+    buffer[7] = (environmental_data.humidity >> 8);
+    buffer[8] = environmental_data.movement_counter;
 
     // Create a data packet to send
     app_lib_data_to_send_t data_to_send;
@@ -100,10 +107,11 @@ static uint32_t send_data_task(void)
     environmental_data.temp_to_send = false;
     environmental_data.humi_to_send = false;
     environmental_data.mov_count_to_send = false;
+    environmental_data.volt_to_send = false;
     // Inform the stack that this function should be called again in
-    // period_ms microseconds. By returning APP_SCHEDULER_STOP_TASK,
+    // send_period_ms microseconds. By returning APP_SCHEDULER_STOP_TASK,
     // the stack won't call this function again.
-    return period_ms;
+    return send_period_ms;
 }
 
 /**
@@ -114,7 +122,10 @@ static uint32_t send_data_task(void)
 static uint32_t trigger_sensors_task(void)
 {
     hts221_one_shot();
-    return 10000;
+    environmental_data.voltage = battery_measurement_get();
+    LOG(LVL_DEBUG, "Battery voltage %lu mV", environmental_data.voltage);
+    environmental_data.volt_to_send = true;
+    return measure_period_ms;
 }
 
 void hts221_interrupt_handler(uint8_t pin, gpio_event_e event)
@@ -141,8 +152,9 @@ static uint32_t init_sensors(void)
 {
     hts221_init();
     hts221_enable();
-    GPIO_register_for_event(24, GPIO_NOPULL, GPIO_EVENT_HL, 100, hts221_interrupt_handler);
+    GPIO_register_for_event(24, GPIO_NOPULL, GPIO_EVENT_HL, 10, hts221_interrupt_handler);
     GPIO_register_for_event(4, GPIO_NOPULL, GPIO_EVENT_LH, 10, hw416_interrupt_handler);
+    battery_measurement_init();
     return APP_SCHEDULER_STOP_TASK;
 }
 
@@ -174,23 +186,23 @@ void App_init(const app_global_functions_t *functions)
     lib_settings->setNodeRole(APP_LIB_SETTINGS_ROLE_AUTOROLE_LL);
 #endif
 
-    // Set a periodic callback to be called after DEFAULT_PERIOD_MS
-    period_ms = DEFAULT_PERIOD_MS;
-    App_Scheduler_addTask_execTime(send_data_task,
-                                   APP_SCHEDULER_SCHEDULE_ASAP,
-                                   EXECUTION_TIME_US);
-
-    App_Scheduler_addTask_execTime(trigger_sensors_task,
-                                   APP_SCHEDULER_SCHEDULE_ASAP,
-                                   EXECUTION_TIME_US);
-
     // Enable power for sensors
     nrf_gpio_pin_dir_set(VDD_PWD_CTRL, NRF_GPIO_PIN_DIR_OUTPUT);
     nrf_gpio_cfg_output(VDD_PWD_CTRL);
     nrf_gpio_pin_set(VDD_PWD_CTRL); // consumes about 70 µA
 
-    App_Scheduler_addTask_execTime(init_sensors, 1000, 50 * 1000);
+    App_Scheduler_addTask_execTime(init_sensors, TASK_DELAY_TIME_MS, EXECUTION_TIME_US);
 
+    measure_period_ms = DEFAULT_MEASURE_PERIOD_MS;
+    App_Scheduler_addTask_execTime(trigger_sensors_task,
+                                   TASK_DELAY_TIME_MS,
+                                   EXECUTION_TIME_US);
+
+    // Set a periodic callback to be called after DEFAULT_SEND_PERIOD_MS
+    send_period_ms = DEFAULT_SEND_PERIOD_MS;
+    App_Scheduler_addTask_execTime(send_data_task,
+                                   APP_SCHEDULER_SCHEDULE_ASAP,
+                                   EXECUTION_TIME_US);
     // Start the stack
     lib_state->startStack();
 }
