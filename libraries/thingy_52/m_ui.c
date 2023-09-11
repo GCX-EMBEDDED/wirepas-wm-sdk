@@ -37,65 +37,46 @@
  */
 
 #include "m_ui.h"
-#include "drv_ext_light.h"
-#include "app_error.h"
-#include <stdlib.h>
-#include <string.h>
-#include "pca20020.h"
-#include "nrf_drv_gpiote.h"
-#include "app_scheduler.h"
 #include "app_util_platform.h"
+#include "drv_ext_light.h"
+#include "nrf_drv_gpiote.h"
+#include "pca20020.h"
+#include <stdint.h>
+#include <stdlib.h>
 
-#define  NRF_LOG_MODULE_NAME "m_ui          "
-#include "nrf_log.h"
-#include "macros_common.h"
 
-#define DEBUG_LOG_MODULE_NAME "EVAL_APP"
-/** To activate logs, configure the following line with "LVL_INFO". */
-#define DEBUG_LOG_MAX_LEVEL LVL_DEBUG
-
-#include "debug_log.h"
-
-uint32_t m_ui_init(m_ui_init_t * p_params)
+uint32_t m_ui_init(m_ui_init_t *p_params)
 {
-    
-    static drv_sx1509_cfg_t         sx1509_cfg;
-    drv_ext_light_init_t            led_init;
+
+    static drv_sx1509_cfg_t sx1509_cfg;
+    drv_ext_light_init_t led_init;
     static const drv_ext_light_conf_t led_conf[DRV_EXT_LIGHT_NUM] = DRV_EXT_LIGHT_CFG;
 
-    static const nrf_drv_twi_config_t twi_config =
-    {
-        .scl                = TWI_SCL,
-        .sda                = TWI_SDA,
-        .frequency          = NRF_TWI_FREQ_100K,
-        .interrupt_priority = APP_IRQ_PRIORITY_LOW
-    };
+    static const nrf_drv_twi_config_t twi_config = {
+        .scl = TWI_SCL, .sda = TWI_SDA, .frequency = NRF_TWI_FREQ_100K, .interrupt_priority = APP_IRQ_PRIORITY_LOW};
 
-    sx1509_cfg.twi_addr       = SX1509_ADDR;
+    sx1509_cfg.twi_addr = SX1509_ADDR;
     sx1509_cfg.p_twi_instance = p_params->p_twi_instance;
-    sx1509_cfg.p_twi_cfg      = &twi_config;
+    sx1509_cfg.p_twi_cfg = &twi_config;
 
-    led_init.p_light_conf        = led_conf;
-    led_init.num_lights          = DRV_EXT_LIGHT_NUM;
-    led_init.clkx_div            = DRV_EXT_LIGHT_CLKX_DIV_8;
-    led_init.p_twi_conf          = &sx1509_cfg;
-    led_init.resync_pin          = SX_RESET;
+    led_init.p_light_conf = led_conf;
+    led_init.num_lights = DRV_EXT_LIGHT_NUM;
+    led_init.clkx_div = DRV_EXT_LIGHT_CLKX_DIV_8;
+    led_init.p_twi_conf = &sx1509_cfg;
+    led_init.resync_pin = SX_RESET;
 
     drv_ext_light_init(&led_init, false);
-    
 
-    //(void)drv_ext_light_on(DRV_EXT_RGB_LED_SENSE);
-    //(void)drv_ext_light_on(DRV_EXT_RGB_LED_LIGHTWELL);
-
-    drv_ext_light_rgb_intensity_t color;
-
-    color.r =255;
-    color.g = 150;
-    color.b = 50;
-    (void)drv_ext_light_rgb_intensity_set(DRV_EXT_RGB_LED_SENSE, &color);
-    (void)drv_ext_light_rgb_intensity_set(DRV_EXT_RGB_LED_LIGHTWELL, &color);
-    
     return NRF_SUCCESS;
 }
 
-// Create a function to set the leds 
+ret_code_t m_ui_set_color_led_lightwell(uint8_t red, uint8_t green, uint8_t blue)
+{
+
+    drv_ext_light_rgb_intensity_t color;
+
+    color.r = red;
+    color.g = green;
+    color.b = blue;
+    return drv_ext_light_rgb_intensity_set(DRV_EXT_RGB_LED_LIGHTWELL, &color);
+}
