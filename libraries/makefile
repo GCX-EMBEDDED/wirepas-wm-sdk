@@ -98,6 +98,12 @@ SRCS += $(WP_LIB_PATH)hts221_driver/hts221.c
 INCLUDES += -I$(WP_LIB_PATH)hts221_driver
 endif
 
+ifeq ($(CCS811), yes)
+SRCS += $(WP_LIB_PATH)ccs811_driver/gas_sensor.c
+SRCS += $(WP_LIB_PATH)ccs811_driver/ccs811.c
+INCLUDES += -I$(WP_LIB_PATH)ccs811_driver
+endif
+
 ifeq ($(SX1509), yes)
 SRCS += $(WP_LIB_PATH)sx1509_driver/sx1509.c
 INCLUDES += -I$(WP_LIB_PATH)sx1509_driver

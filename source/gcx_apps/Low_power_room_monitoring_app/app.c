@@ -19,6 +19,7 @@
 #include "hts221.h"
 #include "gpio.h"
 #include "battery_measurement.h"
+#include "gas_sensor.h"
 #include "sx1509.h"
 
 #define DEBUG_LOG_MODULE_NAME "MEETING_ROOM_MONITOR_APP"

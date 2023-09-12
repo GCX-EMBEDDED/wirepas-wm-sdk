@@ -20,3 +20,4 @@ HAL_VOLTAGE=yes
 
 HTS221=yes
 SX1509=yes
+CCS811=yes
