@@ -1,7 +1,7 @@
 # Use Shared Data
 SHARED_DATA=yes
 
-APP_PRINTING=yes
+APP_PRINTING=no
 
 # Use App Scheduler and configure it
 APP_SCHEDULER=yes
