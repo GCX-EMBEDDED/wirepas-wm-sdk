@@ -10,15 +10,13 @@
 #include "shared_data.h"
 #include "app_scheduler.h"
 #include "hal_api.h"
-#include "m_ui.h"
+//#include "m_ui.h"
 
-#include "app_util_platform.h"
-#include "nrf_delay.h"
-#include "twi_manager.h"
-#include "pca20020.h"
-#include "drv_gas_sensor.h"
-#include "m_environment.h"
-#include "battery_measurement.h"
+//#include "app_util_platform.h"
+//#include "nrf_delay.h"
+//#include "twi_manager.h"
+//#include "pca20020.h"
+#include "gas_sensor.h"
 
 #define DEBUG_LOG_MODULE_NAME "MEETING_ROOM_MONITOR_APP"
 /** To activate logs, configure the following line with "LVL_INFO". */
@@ -39,6 +37,13 @@
 
 #define LED_ON_DURING_STARTUP_MS 1000
 
+
+typedef struct __attribute__((packed))
+{
+    int8_t  integer;
+    uint8_t decimal;
+} temperature_t;
+
 /** Period to send measurements, in ms */
 static uint32_t period_ms;
 
@@ -48,7 +53,7 @@ typedef struct __attribute__((packed))
     uint32_t period_ms;
 } payload_periodic_t;
 
-static const nrf_drv_twi_t     m_twi_sensors = NRF_DRV_TWI_INSTANCE(TWI_SENSOR_INSTANCE);
+//static const nrf_drv_twi_t     m_twi_sensors = NRF_DRV_TWI_INSTANCE(TWI_SENSOR_INSTANCE);
 static void board_init(void);
 bool calibrated_gas_sensor = false;
 
@@ -61,11 +66,15 @@ static uint32_t send_data_task(void)
     static uint8_t id = 0; // Value to send
     static uint8_t buffer[8];
 
-    uint16_t voltage = battery_measurement_get();
-    LOG(LVL_DEBUG, "Battery voltage %lu mV", voltage);
+    //uint16_t voltage = battery_measurement_get();
+    //LOG(LVL_DEBUG, "Battery voltage %lu mV", voltage);
+     uint16_t voltage = 10;
+     temperature_t temperature;
+     temperature.integer = 2;
+     temperature.decimal = 3;
 
-    update_temperature();
-    temperature_t temperature =  get_temperature();
+    //update_temperature();
+    //temperature_t temperature =  get_temperature();
 
     drv_ccs811_alg_result_t gas_values;
     gas_values = get_gas_sensor_values();
@@ -105,18 +114,6 @@ static uint32_t send_data_task(void)
 }
 
 
-/**
- * @brief   Task to switch off the LED
- * @return  next period
- */
-static uint32_t switch_off_led_task(void)
-{
-    (void) m_ui_set_color_led_lightwell(0, 0, 0 );
-    // Inform the stack that this function should be called again in
-    // period_ms microseconds. By returning APP_SCHEDULER_STOP_TASK,
-    // the stack won't call this function again.
-    return APP_SCHEDULER_STOP_TASK;
-}
 
 /**
  * \brief   Initialization callback for application
@@ -146,15 +143,6 @@ void App_init(const app_global_functions_t *functions)
     lib_settings->setNodeRole(APP_LIB_SETTINGS_ROLE_AUTOROLE_LL);
 #endif
     board_init();
-    twi_manager_init(APP_IRQ_PRIORITY_THREAD);
-    m_ui_init_t ui_params;
-    ui_params.p_twi_instance = &m_twi_sensors;
-    m_ui_init(&ui_params);
-    m_environment_init_t     env_params;
-    env_params.p_twi_instance = &m_twi_sensors;
-    m_environment_init(&env_params);
-    /* Initialize voltage measurement. */
-    battery_measurement_init();
 
     // Set a periodic callback to be called after DEFAULT_PERIOD_MS
     period_ms = DEFAULT_PERIOD_MS;
@@ -170,11 +158,7 @@ void App_init(const app_global_functions_t *functions)
     gas_start();
     calibrated_gas_sensor = true;
     }
-    (void) m_ui_set_color_led_lightwell(255, 0, 0 );
-    App_Scheduler_addTask_execTime(switch_off_led_task,
-                                      LED_ON_DURING_STARTUP_MS,
-                                      EXECUTION_TIME_US);
-
+;
     // Start the stack
     lib_state->startStack();
 }
@@ -182,26 +166,26 @@ void App_init(const app_global_functions_t *functions)
 
 static void board_init(void)
 {
-    drv_ext_gpio_init_t ext_gpio_init;
-    static const nrf_drv_twi_config_t twi_config =
-    {
-        .scl                = TWI_SCL,
-        .sda                = TWI_SDA,
-        .frequency          = NRF_TWI_FREQ_400K,
-        .interrupt_priority = 3
-    };
+    //drv_ext_gpio_init_t ext_gpio_init;
+    // static const nrf_drv_twi_config_t twi_config =
+    // {
+    //     .scl                = TWI_SCL,
+    //     .sda                = TWI_SDA,
+    //     .frequency          = NRF_TWI_FREQ_400K,
+    //     .interrupt_priority = 3
+    // };
 
-    static const drv_sx1509_cfg_t sx1509_cfg =
-    {
-        .twi_addr       = SX1509_ADDR,
-        .p_twi_instance = &m_twi_sensors,
-        .p_twi_cfg      = &twi_config
-    };
+    // static const drv_sx1509_cfg_t sx1509_cfg =
+    // {
+    //     .twi_addr       = SX1509_ADDR,
+    //     .p_twi_instance = &m_twi_sensors,
+    //     .p_twi_cfg      = &twi_config
+    // };
 
-    ext_gpio_init.p_cfg = &sx1509_cfg;
+    //ext_gpio_init.p_cfg = &sx1509_cfg;
     
-    support_func_configure_io_startup(&ext_gpio_init);
+    //support_func_configure_io_startup(&ext_gpio_init);
 
 
-    nrf_delay_ms(100);
+    //nrf_delay_ms(100);
 }

@@ -8,4 +8,8 @@ APP_SCHEDULER=yes
 APP_SCHEDULER_TASKS=2
 
 # Use the thingy 52 libraries
-thingy_52=yes
+#thingy_52=yes
+
+HAL_I2C=yes
+CCS811=yes
+SX1509=yes

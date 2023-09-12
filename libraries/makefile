@@ -93,6 +93,18 @@ include $(WP_LIB_PATH)dualmcu/waps/makefile
 include $(WP_LIB_PATH)dualmcu/drivers/makefile
 endif
 
+ifeq ($(CCS811), yes)
+SRCS += $(WP_LIB_PATH)ccs811_driver/gas_sensor.c
+SRCS += $(WP_LIB_PATH)ccs811_driver/ccs811.c
+INCLUDES += -I$(WP_LIB_PATH)ccs811_driver
+endif
+
+ifeq ($(SX1509), yes)
+SRCS += $(WP_LIB_PATH)sx1509_driver/sx1509.c
+INCLUDES += -I$(WP_LIB_PATH)sx1509_driver
+endif
+
+
 ifeq ($(thingy_52), yes)
 SRCS += $(WP_LIB_PATH)thingy_52/drv_sx1509.c
 SRCS += $(WP_LIB_PATH)thingy_52/drv_ext_gpio.c

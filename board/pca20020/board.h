@@ -13,27 +13,26 @@
 #ifndef _BOARD_NRF52832_PCA20020_H_
 #define _BOARD_NRF52832_PCA20020_H_
 
-
 // NRF_GPIO is mapped to NRF_P0 , for pins P0.00 ... P0.31
 // With nrf_gpio.h, use SW_pin (logical pins, port-aware)
 
 /**
-NRF_P0  SW_pin  Thingy:52 board       
+NRF_P0  SW_pin  Thingy:52 board
 -------------------------------
-P0.00   0       XL1             Low freq. crystal     
-P0.01   1       XL2             Low freq. crystal      
-P0.02   2       ANA/DIG0      
-P0.03   3       ANA/DIG1      
-P0.04   4       ANA/DIG2      
+P0.00   0       XL1             Low freq. crystal
+P0.01   1       XL2             Low freq. crystal
+P0.02   2       ANA/DIG0
+P0.03   3       ANA/DIG1
+P0.04   4       ANA/DIG2
 P0.05   5       SX_OSCIO        I/O expander oscillator input line
 P0.06   6       MPU_INT         Motion sensor interrupt line
 P0.07   7       SDA             I2C data line
 P0.08   8       SCL             I2C clock line
-P0.09   9       NFC1      
-P0.10   10      NFC2      
-P0.11   11      BUTTON  
+P0.09   9       NFC1
+P0.10   10      NFC2
+P0.11   11      BUTTON
 P0.12   12      LIS_INT1        Low power accelerometer interrupt line
-P0.13   13      USB_DETECT     
+P0.13   13      USB_DETECT
 P0.14   14      SDA_EXT         External and low power accelerometer I2C data line
 P0.15   15      SCL_EXT         External and low power accelerometer I2C clock line
 P0.16   16      SX_RESET        I/O expander reset line
@@ -46,50 +45,57 @@ P0.22   22      CCS_INT         Gas sensor interrupt line
 P0.23   23      LPS_INT         Pressure sensor interrupt line
 P0.24   24      HTS_INT         Humidity sensor interrupt line
 P0.25   25      MIC_DOUT        Microphone PDM data
-P0.26   26      MIC_CLK         Microphone PDM clock 
-P0.27   27      SPEAKER         Speaker PWM signal  
+P0.26   26      MIC_CLK         Microphone PDM clock
+P0.27   27      SPEAKER         Speaker PWM signal
 P0.28   28      BATTERY         Battery monitoring input
-P0.29   29      SPK_PWR_CTRL    Speaker amplifier power control 
+P0.29   29      SPK_PWR_CTRL    Speaker amplifier power control
 P0.30   30      VDD_PWD_CTRL    Power control for sensors, I/O expander, and LEDs
 P0.31   31      BH_INT          Color sensor interrupt line
 
 I/O expander pin map
 -------------------------------
-SXIO0    IOEXT0                 gpio       
-SXIO1    IOEXT1                 gpio           
-SXIO2    IOEXT2                 gpio           
-SXIO3    IOEXT3                 gpio          
-SXIO4    BAT_MON_EN             Battery monitoring enable          
-SXIO5    LIGHTWELL_G            Green color of the lightwell LEDs          
-SXIO6    LIGHTWELL_B            Blue color of the lightwell LEDs           
-SXIO7    LIGHTWELL_R            Red color of the lightwell LEDs           
-SXIO8    MPU_PWR_CTRL           Motion sensor power control           
-SXIO9    MIC_PWR_CTRL           Microphone power control          
-SXIO10   CCS_PWR_CTRL           Gas sensor power control          
-SXIO11   CCS_RESET              Gas sensor reset line           
-SXIO12   CCS_WAKE               Gas sensor wake line             
-SXIO13   SENSE_LED_R            Red color of the color sensor support LED           
-SXIO14   SENSE_LED_G            Green color of the color sensor support LED           
-SXIO15   SENSE_LED_B            Blue color of the color sensor support LED           
+SXIO0    IOEXT0                 gpio
+SXIO1    IOEXT1                 gpio
+SXIO2    IOEXT2                 gpio
+SXIO3    IOEXT3                 gpio
+SXIO4    BAT_MON_EN             Battery monitoring enable
+SXIO5    LIGHTWELL_G            Green color of the lightwell LEDs
+SXIO6    LIGHTWELL_B            Blue color of the lightwell LEDs
+SXIO7    LIGHTWELL_R            Red color of the lightwell LEDs
+SXIO8    MPU_PWR_CTRL           Motion sensor power control
+SXIO9    MIC_PWR_CTRL           Microphone power control
+SXIO10   CCS_PWR_CTRL           Gas sensor power control
+SXIO11   CCS_RESET              Gas sensor reset line
+SXIO12   CCS_WAKE               Gas sensor wake line
+SXIO13   SENSE_LED_R            Red color of the color sensor support LED
+SXIO14   SENSE_LED_G            Green color of the color sensor support LED
+SXIO15   SENSE_LED_B            Blue color of the color sensor support LED
 */
 
-
-
 // Serial port pins
-#define BOARD_USART_TX_PIN              2
-#define BOARD_USART_RX_PIN              3
+#define BOARD_USART_TX_PIN 2
+#define BOARD_USART_RX_PIN 3
 
 // Active low polarity for LEDs
-#define BOARD_LED_ACTIVE_LOW            true
+#define BOARD_LED_ACTIVE_LOW true
 
-// List of GPIO pins for buttons on the board: Button 1 
-#define BOARD_BUTTON_PIN_LIST           {11}
+// List of GPIO pins for buttons on the board: Button 1
+#define BOARD_BUTTON_PIN_LIST \
+    {                         \
+        11                    \
+    }
 
 // Active low polarity for buttons
-#define BOARD_BUTTON_ACTIVE_LOW         true
+#define BOARD_BUTTON_ACTIVE_LOW true
 
 // Active internal pull-up for buttons
-#define BOARD_BUTTON_INTERNAL_PULL      true
+#define BOARD_BUTTON_INTERNAL_PULL true
+
+#define USE_I2C1
+#define BOARD_I2C_SDA_PIN 7
+#define BOARD_I2C_SCL_PIN 8
+#define HTS_INT 24
+#define VDD_PWD_CTRL 30
 
 // The board supports DCDC (#define BOARD_SUPPORT_DCDC)
 // Since SDK v1.2 (bootloader > v7) this option has been move to
