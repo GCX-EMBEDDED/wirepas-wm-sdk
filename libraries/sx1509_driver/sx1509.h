@@ -16,6 +16,10 @@
 #define BANK_A 0
 #define BANK_B 1
 
+#define GREEN_LED 5 // Green color of the lightwell LEDs SXIO5
+#define BLUE_LED 6  // Blue color of the lightwell LEDs  SXIO6
+#define RED_LED 7   // Red color of the lightwell LEDs   SXIO7
+
 /**@brief Function to set a pin as output.
  *
  * @return 0 If the call was successful
@@ -32,12 +36,12 @@ uint8_t sx1509_set_pin_level(uint8_t bank, uint8_t pin, uint8_t level);
  *
  * @return 0 If the call was successful
  */
-uint8_t sx1509_set_all_pins_high();
+uint8_t sx1509_set_all_pins_high(void);
 
 /**@brief Function to set all output pins of the io-extender to low
  *
  * @return 0 If the call was successful
  */
-uint8_t sx1509_set_all_pins_low();
+uint8_t sx1509_set_all_pins_low(void);
 
 #endif // DRV_SX1509_H__

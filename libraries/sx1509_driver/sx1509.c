@@ -179,7 +179,7 @@ uint8_t sx1509_set_pin_level(uint8_t bank, uint8_t pin, uint8_t level)
     return res;
 }
 
-uint8_t sx1509_set_all_pins_high()
+uint8_t sx1509_set_all_pins_high(void)
 {
     uint8_t res;
     uint8_t allOutput = 0x00; // All pins as output
@@ -214,7 +214,7 @@ uint8_t sx1509_set_all_pins_high()
     return res;
 }
 
-uint8_t sx1509_setAllPinsLow()
+uint8_t sx1509_set_all_pins_low(void)
 {
     uint8_t res;
     uint8_t allOutput = 0x00; // All pins as output
