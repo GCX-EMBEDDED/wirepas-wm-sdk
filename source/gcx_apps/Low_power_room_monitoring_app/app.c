@@ -43,6 +43,7 @@
 #define MSG_ID_READING 0
 
 #define BUTTON 11 // The pin number of the button on PCA20020 board
+#define HW416 4   // The pin number to which the motion detection sensor is connected
 
 enum measurement_state
 {
@@ -220,11 +221,11 @@ static uint32_t init_sensors_task(void)
     {
         LOG(LVL_ERROR, "Failed to init the hts221 sensor");
     }
-    if (GPIO_register_for_event(24, GPIO_NOPULL, GPIO_EVENT_HL, 10, hts221_interrupt_handler) != GPIO_RES_OK)
+    if (GPIO_register_for_event(HTS_INT, GPIO_NOPULL, GPIO_EVENT_HL, 10, hts221_interrupt_handler) != GPIO_RES_OK)
     {
         LOG(LVL_ERROR, "Failed to register event handler for hts221");
     }
-    if (GPIO_register_for_event(4, GPIO_NOPULL, GPIO_EVENT_LH, 10, hw416_interrupt_handler) != GPIO_RES_OK)
+    if (GPIO_register_for_event(HW416, GPIO_NOPULL, GPIO_EVENT_LH, 10, hw416_interrupt_handler) != GPIO_RES_OK)
     {
         LOG(LVL_ERROR, "Failed to register event handler for hw416");
     }
