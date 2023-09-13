@@ -174,31 +174,39 @@ typedef void (*hts221_evt_handler_t)(hts221_evt_t evt);
  *
  * @return 0 If the call was successful
  */
-int32_t htc221_init(void);
+uint8_t hts221_init(void);
 
 /**@brief Function for enabling the sensor.
  *
  * @return 0 If the call was successful
  */
-int32_t hts221_enable(void);
+uint8_t hts221_enable(void);
 
 /**@brief Function for disabling the sensor.
  *
  * @return 0 If the call was successful
  */
-int32_t hts221_disable(void);
+uint8_t hts221_disable(void);
 
 /**@brief Function for verifying the HTS221 WHO_AM_I register.
  *
- * @return 0 If the call was successful and -1 if not*/
+ * @return 0 If the call was successful*/
 uint8_t hts221_verify(void);
 
 /**@brief Function for getting the sensor calibration data.
  *
  * @param[out]   p_calib   Calibration values.
  *
- * @return 0 If the call was successful and -1 if not*/
-int32_t hts221_calib_get(hts221_calib_t *p_calib);
+ * @return 0 If the call was successful*/
+uint8_t hts221_calib_get(hts221_calib_t *p_calib);
+
+/**@brief Function for configuring the HTS221 sensor according to the specified configuration.
+ *
+ * @param[in]   p_cfg   Pointer to the sensor configuration.
+ *
+ * @return 0 If the call was successful
+ */
+uint8_t hts221_cfg_set(hts221_cfg_t *const p_cfg);
 
 /**@brief Function for getting the humidity data.
  *
@@ -213,19 +221,9 @@ int16_t hts221_humidity_get(void);
 float hts221_temperature_get(void);
 
 /**@brief Function for starting one shot conversion.
- * At the end of the conversion the new data are available in the output registers
- * and the ONE_SHOT bit comes back to ‘0’ by hardware
  *
  * @return  0 If the call was successful
  */
-int32_t hts221_one_shot(void);
-
-/**@brief Function for configuring the HTS221 sensor according to the specified configuration.
- *
- * @param[in]   p_cfg   Pointer to the sensor configuration.
- *
- * @return 0 If the call was successful
- */
-int32_t hts221_cfg_set(hts221_cfg_t *const p_cfg);
+uint8_t hts221_one_shot(void);
 
 #endif //__DRIVER_HTS221_H__
