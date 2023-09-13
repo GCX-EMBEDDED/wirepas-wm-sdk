@@ -5,7 +5,7 @@
 
 /*
  * \file    app.c
- * \brief   This file is a template for writing a Meeting room monitor application
+ * \brief   Meeting room monitor application
  */
 
 #include <stdlib.h>
