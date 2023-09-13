@@ -197,7 +197,7 @@ static uint32_t switch_off_led_task(void)
     return APP_SCHEDULER_STOP_TASK;
 }
 
-static uint32_t init_sensors(void)
+static uint32_t init_sensors_task(void)
 {
     if (hts221_init() == 0)
     {
@@ -278,7 +278,7 @@ void App_init(const app_global_functions_t *functions)
     nrf_gpio_cfg_output(VDD_PWD_CTRL);
     nrf_gpio_pin_set(VDD_PWD_CTRL); // Consumes about 70 µA
 
-    App_Scheduler_addTask_execTime(init_sensors, TASK_DELAY_TIME_MS, EXECUTION_TIME_US);
+    App_Scheduler_addTask_execTime(init_sensors_task, TASK_DELAY_TIME_MS, EXECUTION_TIME_US);
 
     // Start the stack
     lib_state->startStack();
