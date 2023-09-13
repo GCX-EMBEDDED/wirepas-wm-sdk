@@ -39,7 +39,7 @@ int32_t sx1509_writeI2C(
     tx[0] = reg;
     memcpy(&tx[1], bufp, len);
     res = I2C_init(&m_i2c_conf);
-
+    if (res == I2C_RES_OK || res == I2C_RES_ALREADY_INITIALIZED)
     {
         i2c_xfer_t xfer_tx = {
             .address = SX1509_ADDR,
@@ -51,6 +51,12 @@ int32_t sx1509_writeI2C(
         res = I2C_transfer(&xfer_tx, NULL);
         I2C_close();
     }
+
+    if (res != I2C_RES_OK)
+    {
+        LOG(LVL_ERROR, "I2C write ERROR res:%u reg: 0x%x len: %u", res, reg, len);
+    }
+
     return res;
 }
 
@@ -87,14 +93,20 @@ int32_t sx1509_readI2C(
         memcpy(bufp, &rx[0], len);
     }
     I2C_close();
+
+    if (res != I2C_RES_OK)
+    {
+        LOG(LVL_ERROR, "I2C read ERROR res:%u reg: 0x%x len: %u", res, reg, len);
+    }
+
     return res;
 }
 
-int32_t sx1509_setPinAsOutput(uint8_t bank, uint8_t pin)
+uint8_t sx1509_set_pin_as_output(uint8_t bank, uint8_t pin)
 {
     uint8_t regAddr;
     uint8_t regValue;
-    int32_t res;
+    uint8_t res;
 
     if (bank == BANK_A)
     {
@@ -113,6 +125,7 @@ int32_t sx1509_setPinAsOutput(uint8_t bank, uint8_t pin)
     res = sx1509_readI2C(regAddr, &regValue, 1);
     if (res != I2C_RES_OK)
     {
+        LOG(LVL_ERROR, "I2C read error err: %u", res);
         return res;
     }
 
@@ -124,11 +137,11 @@ int32_t sx1509_setPinAsOutput(uint8_t bank, uint8_t pin)
     return res;
 }
 
-int32_t sx1509_setPinLevel(uint8_t bank, uint8_t pin, uint8_t level)
+uint8_t sx1509_set_pin_level(uint8_t bank, uint8_t pin, uint8_t level)
 {
     uint8_t regAddr;
     uint8_t regValue;
-    int32_t res;
+    uint8_t res;
 
     if (bank == BANK_A)
     {
@@ -147,6 +160,7 @@ int32_t sx1509_setPinLevel(uint8_t bank, uint8_t pin, uint8_t level)
     res = sx1509_readI2C(regAddr, &regValue, 1);
     if (res != I2C_RES_OK)
     {
+        LOG(LVL_ERROR, "I2C read error err: %u", res);
         return res;
     }
 
@@ -165,9 +179,9 @@ int32_t sx1509_setPinLevel(uint8_t bank, uint8_t pin, uint8_t level)
     return res;
 }
 
-int32_t sx1509_setAllPinsHigh()
+uint8_t sx1509_set_all_pins_high()
 {
-    int32_t res;
+    uint8_t res;
     uint8_t allOutput = 0x00; // All pins as output
     uint8_t allHigh = 0xFF;   // All pins high
 
@@ -175,6 +189,7 @@ int32_t sx1509_setAllPinsHigh()
     res = sx1509_writeI2C(REG_DIR_A, &allOutput, 1);
     if (res != I2C_RES_OK)
     {
+        LOG(LVL_ERROR, "I2C write error err: %u", res);
         return res;
     }
 
@@ -182,6 +197,7 @@ int32_t sx1509_setAllPinsHigh()
     res = sx1509_writeI2C(REG_DIR_B, &allOutput, 1);
     if (res != I2C_RES_OK)
     {
+        LOG(LVL_ERROR, "I2C write error err: %u", res);
         return res;
     }
 
@@ -189,6 +205,7 @@ int32_t sx1509_setAllPinsHigh()
     res = sx1509_writeI2C(REG_DATA_A, &allHigh, 1);
     if (res != I2C_RES_OK)
     {
+        LOG(LVL_ERROR, "I2C write error err: %u", res);
         return res;
     }
 
@@ -197,9 +214,9 @@ int32_t sx1509_setAllPinsHigh()
     return res;
 }
 
-int32_t sx1509_setAllPinsLow()
+uint8_t sx1509_setAllPinsLow()
 {
-    int32_t res;
+    uint8_t res;
     uint8_t allOutput = 0x00; // All pins as output
     uint8_t allLow = 0x00;    // All pins low
 
@@ -207,6 +224,7 @@ int32_t sx1509_setAllPinsLow()
     res = sx1509_writeI2C(REG_DIR_A, &allOutput, 1);
     if (res != I2C_RES_OK)
     {
+        LOG(LVL_ERROR, "I2C write error err: %u", res);
         return res;
     }
 
@@ -214,6 +232,7 @@ int32_t sx1509_setAllPinsLow()
     res = sx1509_writeI2C(REG_DIR_B, &allOutput, 1);
     if (res != I2C_RES_OK)
     {
+        LOG(LVL_ERROR, "I2C write error err: %u", res);
         return res;
     }
 
@@ -221,6 +240,7 @@ int32_t sx1509_setAllPinsLow()
     res = sx1509_writeI2C(REG_DATA_A, &allLow, 1);
     if (res != I2C_RES_OK)
     {
+        LOG(LVL_ERROR, "I2C write error err: %u", res);
         return res;
     }
 

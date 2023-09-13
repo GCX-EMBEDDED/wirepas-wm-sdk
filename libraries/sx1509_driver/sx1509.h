@@ -16,12 +16,28 @@
 #define BANK_A 0
 #define BANK_B 1
 
-int32_t sx1509_setPinLevel(uint8_t bank, uint8_t pin, uint8_t level);
+/**@brief Function to set a pin as output.
+ *
+ * @return 0 If the call was successful
+ */
+uint8_t sx1509_set_pin_as_output(uint8_t bank, uint8_t pin);
 
-int32_t sx1509_setPinAsOutput(uint8_t bank, uint8_t pin);
+/**@brief Function to set the level (High or Low) of an output pin.
+ *
+ * @return 0 If the call was successful
+ */
+uint8_t sx1509_set_pin_level(uint8_t bank, uint8_t pin, uint8_t level);
 
-int32_t sx1509_setAllPinsHigh();
+/**@brief Function to set all output pins of the io-extender to high
+ *
+ * @return 0 If the call was successful
+ */
+uint8_t sx1509_set_all_pins_high();
 
-int32_t sx1509_setAllPinsLow();
+/**@brief Function to set all output pins of the io-extender to low
+ *
+ * @return 0 If the call was successful
+ */
+uint8_t sx1509_set_all_pins_low();
 
 #endif // DRV_SX1509_H__
