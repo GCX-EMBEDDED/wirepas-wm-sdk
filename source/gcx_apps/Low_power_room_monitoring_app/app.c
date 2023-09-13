@@ -129,7 +129,10 @@ static uint32_t measurement_sm_task(void)
     case SM_MEAS_TRIGGER_TEMPERATURE_CONV:
         // Trigger temperature and humidity sensor conversion
         state = SM_MEAS_WAIT_FOR_TEMPERATURE_CONV;
-        hts221_one_shot();
+        if (hts221_one_shot() != 0)
+        {
+            LOG(LVL_ERROR, "Failed to preform one shot measurement on the hts221 sensor");
+        }
         break;
 
     case SM_MEAS_WAIT_FOR_TEMPERATURE_CONV:
@@ -190,11 +193,29 @@ void hw416_interrupt_handler(uint8_t pin, gpio_event_e event)
 
 static uint32_t init_sensors(void)
 {
-    hts221_init();
-    hts221_enable();
-    GPIO_register_for_event(24, GPIO_NOPULL, GPIO_EVENT_HL, 10, hts221_interrupt_handler);
-    GPIO_register_for_event(4, GPIO_NOPULL, GPIO_EVENT_LH, 10, hw416_interrupt_handler);
-    battery_measurement_init();
+    if (hts221_init() == 0)
+    {
+        if (hts221_enable() != 0)
+        {
+            LOG(LVL_ERROR, "Failed to enable the hts221 sensor");
+        }
+    }
+    else
+    {
+        LOG(LVL_ERROR, "Failed to init the hts221 sensor");
+    }
+    if (GPIO_register_for_event(24, GPIO_NOPULL, GPIO_EVENT_HL, 10, hts221_interrupt_handler) != GPIO_RES_OK)
+    {
+        LOG(LVL_ERROR, "Failed to register event handler for hts221");
+    }
+    if (GPIO_register_for_event(4, GPIO_NOPULL, GPIO_EVENT_LH, 10, hw416_interrupt_handler) != GPIO_RES_OK)
+    {
+        LOG(LVL_ERROR, "Failed to register event handler for hw416");
+    }
+    if (battery_measurement_init() != 0)
+    {
+        LOG(LVL_ERROR, "Failed to init battery measurement module");
+    }
     // Read the hts221 sensor to clear the flag of data-ready and to activate the interrupt handler by the next one-shot measurement
     read_temperature_and_humidity();
     state = SM_MEAS_TRIGGER_TEMPERATURE_CONV;
