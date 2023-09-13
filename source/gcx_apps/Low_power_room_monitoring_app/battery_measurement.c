@@ -14,7 +14,7 @@
 #include "sx1509.h"
 
 #define DEBUG_LOG_MODULE_NAME "BATTERY_MEASUREMENT"
-/** To activate logs, configure the following line with "LVL_INFO". */
+/** To activate logs, configure the following line with "LVL_DEBUG". */
 #define DEBUG_LOG_MAX_LEVEL LVL_DEBUG
 
 #include "debug_log.h"
@@ -29,9 +29,16 @@
 #define SX_BAT_MON_EN 4 // BAT_MON_EN_PIN_NO
 #define BATTERY_AIN SAADC_CH_PSELP_PSELP_AnalogInput4
 
-void battery_measurement_init(void)
+uint8_t battery_measurement_init(void)
 {
-    sx1509_setPinAsOutput(BANK_B, SX_BAT_MON_EN);
+    uint8_t err;
+    err = sx1509_set_pin_as_output(BANK_B, SX_BAT_MON_EN);
+    if (err != 0)
+    {
+        LOG(LVL_ERROR, "Error while calling sx1509_set_pin_as_output() err: %u", err);
+        return err;
+    }
+    return err;
 }
 
 /**
@@ -44,7 +51,13 @@ void battery_measurement_init(void)
  */
 uint16_t battery_measurement_get(void)
 {
-    sx1509_setPinLevel(BANK_B, 4, 1); // Enable battery monitoring
+    uint8_t err;
+    err = sx1509_set_pin_level(BANK_B, 4, 1); // Enable battery monitoring
+    if (err != 0)
+    {
+        LOG(LVL_ERROR, "Error while calling sx1509_set_pin_level() err: %u", err);
+        return err;
+    }
 
     volatile uint32_t adc_result = 0; // written by DMA
 
@@ -99,7 +112,13 @@ uint16_t battery_measurement_get(void)
     NRF_SAADC->ENABLE =
         (SAADC_ENABLE_ENABLE_Disabled << SAADC_ENABLE_ENABLE_Pos);
     NRF_SAADC->TASKS_STOP = 1;
-    sx1509_setPinLevel(BANK_B, 4, 0); // Disable battery monitoring to save power.
+
+    err = sx1509_set_pin_level(BANK_B, 4, 0); // Disable battery monitoring to save power.
+    if (err != 0)
+    {
+        LOG(LVL_ERROR, "Error while calling sx1509_set_pin_level() err: %u", err);
+        return err;
+    }
     //   Scaling the result:
     adc_result *= (V_VREF_MV * V_INV_GAIN);
     adc_result /= V_MAX_ADC;
