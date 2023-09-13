@@ -42,6 +42,8 @@
 
 #define MSG_ID_READING 0
 
+#define BUTTON 11 // The pin number of the button on PCA20020 board
+
 enum measurement_state
 {
     SM_MEAS_TRIGGER_TEMPERATURE_CONV,
@@ -191,6 +193,14 @@ void hw416_interrupt_handler(uint8_t pin, gpio_event_e event)
     LOG(LVL_DEBUG, "Movement has been detected!, Movement_counter=%u", environmental_data.movement_counter);
 }
 
+void button_interrupt_handler(uint8_t pin, gpio_event_e event)
+{
+    LOG(LVL_DEBUG, "The button has been pressed!, Resend last message...");
+    App_Scheduler_addTask_execTime(send_data_task,
+                                   APP_SCHEDULER_SCHEDULE_ASAP,
+                                   EXECUTION_TIME_US);
+}
+
 static uint32_t switch_off_led_task(void)
 {
     sx1509_set_pin_level(BANK_B, GREEN_LED, 1);
@@ -217,6 +227,10 @@ static uint32_t init_sensors_task(void)
     if (GPIO_register_for_event(4, GPIO_NOPULL, GPIO_EVENT_LH, 10, hw416_interrupt_handler) != GPIO_RES_OK)
     {
         LOG(LVL_ERROR, "Failed to register event handler for hw416");
+    }
+    if (GPIO_register_for_event(BUTTON, GPIO_NOPULL, GPIO_EVENT_HL, 10, button_interrupt_handler) != GPIO_RES_OK)
+    {
+        LOG(LVL_ERROR, "Failed to register event handler for button press");
     }
     if (battery_measurement_init() != 0)
     {
