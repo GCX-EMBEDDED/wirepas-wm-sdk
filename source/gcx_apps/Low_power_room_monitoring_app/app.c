@@ -191,6 +191,12 @@ void hw416_interrupt_handler(uint8_t pin, gpio_event_e event)
     LOG(LVL_DEBUG, "Movement has been detected!, Movement_counter=%u", environmental_data.movement_counter);
 }
 
+static uint32_t switch_off_led_task(void)
+{
+    sx1509_set_pin_level(BANK_B, GREEN_LED, 1);
+    return APP_SCHEDULER_STOP_TASK;
+}
+
 static uint32_t init_sensors(void)
 {
     if (hts221_init() == 0)
@@ -222,6 +228,19 @@ static uint32_t init_sensors(void)
     App_Scheduler_addTask_execTime(measurement_sm_task,
                                    APP_SCHEDULER_SCHEDULE_ASAP,
                                    EXECUTION_TIME_US);
+
+    // Configure the green led pin as output
+    if (sx1509_set_pin_as_output(BANK_B, GREEN_LED) != 0)
+    {
+        LOG(LVL_ERROR, "Error while configuring the pin of the green led");
+    }
+    // Turn on the green led by setting the led pin to low
+    if (sx1509_set_pin_level(BANK_B, GREEN_LED, 0) != 0)
+    {
+        LOG(LVL_ERROR, "Error while setting the pin of green led to low");
+    }
+    // Call a task to switch off the led after one second
+    App_Scheduler_addTask_execTime(switch_off_led_task, TASK_DELAY_TIME_MS, EXECUTION_TIME_US);
 
     return APP_SCHEDULER_STOP_TASK;
 }
