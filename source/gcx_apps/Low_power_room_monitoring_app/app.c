@@ -60,6 +60,7 @@ struct env_data
     int8_t temp_integer;
     uint8_t temp_decimal;
     int16_t humidity;
+    uint16_t co2;
     uint8_t movement_counter;
     uint16_t voltage;
 };
@@ -81,8 +82,8 @@ static uint32_t send_data_task(void)
     buffer[3] = (environmental_data.voltage >> 8);
     buffer[4] = environmental_data.temp_integer;
     buffer[5] = environmental_data.temp_decimal;
-    buffer[6] = 255;        // Const value for now
-    buffer[7] = (100 >> 8); // Const value for now
+    buffer[6] = environmental_data.co2;
+    buffer[7] = (environmental_data.co2 >> 8);
     buffer[8] = environmental_data.humidity;
     buffer[9] = (environmental_data.humidity >> 8);
     buffer[10] = environmental_data.movement_counter;
@@ -145,6 +146,7 @@ static uint32_t measurement_sm_task(void)
         // Write temperature/humidity to gas sensor
 
         // Trigger gas sensor
+        gas_start();
 
         state = SM_MEAS_WAIT_FOR_GAS_SENSOR_CONV;
         // -> in gas sensor interrupt handler, schedule this task again
@@ -157,6 +159,10 @@ static uint32_t measurement_sm_task(void)
 
     case SM_MEAS_WAIT_FOR_GAS_SENSOR_CONV:
         // Read gas sensor
+        environmental_data.co2 = get_gas_sensor_values().ec02_ppm;
+        LOG(LVL_DEBUG, "CO2 %lu ppm", environmental_data.co2);
+
+        gas_stop();
 
         // Read battery voltage
         environmental_data.voltage = battery_measurement_get();
@@ -182,6 +188,16 @@ static uint32_t measurement_sm_task(void)
 void hts221_interrupt_handler(uint8_t pin, gpio_event_e event)
 {
     if (state == SM_MEAS_WAIT_FOR_TEMPERATURE_CONV)
+    {
+        App_Scheduler_addTask_execTime(measurement_sm_task,
+                                       APP_SCHEDULER_SCHEDULE_ASAP,
+                                       EXECUTION_TIME_US);
+    }
+}
+
+void ccs811_interrupt_handler(uint8_t pin, gpio_event_e event)
+{
+    if (state == SM_MEAS_WAIT_FOR_GAS_SENSOR_CONV)
     {
         App_Scheduler_addTask_execTime(measurement_sm_task,
                                        APP_SCHEDULER_SCHEDULE_ASAP,
@@ -222,9 +238,17 @@ static uint32_t init_sensors_task(void)
     {
         LOG(LVL_ERROR, "Failed to init the hts221 sensor");
     }
+    if (gas_sensor_init() != 0)
+    {
+        LOG(LVL_ERROR, "Failed to init the ccs811 sensor");
+    }
     if (GPIO_register_for_event(HTS_INT, GPIO_NOPULL, GPIO_EVENT_HL, 10, hts221_interrupt_handler) != GPIO_RES_OK)
     {
         LOG(LVL_ERROR, "Failed to register event handler for hts221");
+    }
+    if (GPIO_register_for_event(CCS_INT, GPIO_NOPULL, GPIO_EVENT_HL, 10, ccs811_interrupt_handler) != GPIO_RES_OK)
+    {
+        LOG(LVL_ERROR, "Failed to register event handler for ccs811");
     }
     if (GPIO_register_for_event(HW416, GPIO_NOPULL, GPIO_EVENT_LH, 10, hw416_interrupt_handler) != GPIO_RES_OK)
     {
@@ -240,6 +264,7 @@ static uint32_t init_sensors_task(void)
     }
     // Read the hts221 sensor to clear the flag of data-ready and to activate the interrupt handler by the next one-shot measurement
     read_temperature_and_humidity();
+    calibrate_gas_sensor(hts221_humidity_get(), hts221_temperature_get());
     state = SM_MEAS_TRIGGER_TEMPERATURE_CONV;
     App_Scheduler_addTask_execTime(measurement_sm_task,
                                    APP_SCHEDULER_SCHEDULE_ASAP,
