@@ -103,5 +103,10 @@ SRCS += $(WP_LIB_PATH)sx1509_driver/sx1509.c
 INCLUDES += -I$(WP_LIB_PATH)sx1509_driver
 endif
 
+ifeq ($(CCS811), yes)
+SRCS += $(WP_LIB_PATH)ccs811_driver/ccs811.c
+INCLUDES += -I$(WP_LIB_PATH)ccs811_driver
+endif
+
 SRCS += $(WP_LIB_PATH)libraries_init.c
 INCLUDES += -I$(WP_LIB_PATH)
