@@ -20,6 +20,7 @@
 #include "gpio.h"
 #include "battery_measurement.h"
 #include "sx1509.h"
+#include "ccs811.h"
 
 #define DEBUG_LOG_MODULE_NAME "MEETING_ROOM_MONITOR_APP"
 
@@ -32,7 +33,7 @@
 #define DEFAULT_MEASURE_PERIOD_MS (DEFAULT_MEASURE_PERIOD_S * 1000)
 
 /** Max time needed to execute the periodic work, in us */
-#define EXECUTION_TIME_US 2500
+#define EXECUTION_TIME_US 10 * 1000
 
 /** Delay time needed before executing some tasks, in ms */
 #define TASK_DELAY_TIME_MS 1000
@@ -49,7 +50,7 @@ enum measurement_state
 {
     SM_MEAS_TRIGGER_TEMPERATURE_CONV,
     SM_MEAS_WAIT_FOR_TEMPERATURE_CONV,
-    SM_MEAS_WAIT_FOR_GAS_SENSOR_CONV,
+    SM_MEAS_BATTERY,
 };
 
 static enum measurement_state state;
@@ -61,6 +62,8 @@ struct env_data
     int16_t humidity;
     uint8_t movement_counter;
     uint16_t voltage;
+    ccs811_alg_result_t gas_value;
+    bool gas_sensor_is_running;
 };
 
 static struct env_data environmental_data;
@@ -80,8 +83,8 @@ static uint32_t send_data_task(void)
     buffer[3] = (environmental_data.voltage >> 8);
     buffer[4] = environmental_data.temp_integer;
     buffer[5] = environmental_data.temp_decimal;
-    buffer[6] = 255;        // Const value for now
-    buffer[7] = (100 >> 8); // Const value for now
+    buffer[6] = environmental_data.gas_value.eCO2;
+    buffer[7] = (environmental_data.gas_value.eCO2 >> 8);
     buffer[8] = environmental_data.humidity;
     buffer[9] = (environmental_data.humidity >> 8);
     buffer[10] = environmental_data.movement_counter;
@@ -142,21 +145,20 @@ static uint32_t measurement_sm_task(void)
         // Read temperature and humidity sensor
         read_temperature_and_humidity();
         // Write temperature/humidity to gas sensor
-
-        // Trigger gas sensor
-
-        state = SM_MEAS_WAIT_FOR_GAS_SENSOR_CONV;
-        // -> in gas sensor interrupt handler, schedule this task again
-
-        // Because the interrupt handler is not implemented yet, reschedule the task here again
+        // To be done ..
+        // Start the gas esnsor measurement to measure one time each 1 min
+        if (!environmental_data.gas_sensor_is_running)
+        {
+            ccs811_start();
+            environmental_data.gas_sensor_is_running = true;
+        }
+        state = SM_MEAS_BATTERY;
         App_Scheduler_addTask_execTime(measurement_sm_task,
-                                       APP_SCHEDULER_SCHEDULE_ASAP,
+                                       TASK_DELAY_TIME_MS,
                                        EXECUTION_TIME_US);
         break;
 
-    case SM_MEAS_WAIT_FOR_GAS_SENSOR_CONV:
-        // Read gas sensor
-
+    case SM_MEAS_BATTERY:
         // Read battery voltage
         environmental_data.voltage = battery_measurement_get();
         LOG(LVL_DEBUG, "Battery voltage %lu mV", environmental_data.voltage);
@@ -176,6 +178,13 @@ static uint32_t measurement_sm_task(void)
     }
 
     return next_period;
+}
+
+static uint32_t read_gas_sensor_task(void)
+{
+    ccs811_read_alg_result(&environmental_data.gas_value);
+    LOG(LVL_DEBUG, "CO2 level: %d", environmental_data.gas_value.eCO2);
+    return APP_SCHEDULER_STOP_TASK;
 }
 
 void hts221_interrupt_handler(uint8_t pin, gpio_event_e event)
@@ -202,6 +211,11 @@ void button_interrupt_handler(uint8_t pin, gpio_event_e event)
                                    EXECUTION_TIME_US);
 }
 
+void ccs811_interrupt_handler(uint8_t pin, gpio_event_e event)
+{
+    App_Scheduler_addTask_execTime(read_gas_sensor_task, APP_SCHEDULER_SCHEDULE_ASAP, EXECUTION_TIME_US);
+}
+
 static uint32_t switch_off_led_task(void)
 {
     sx1509_set_pin_level(BANK_B, GREEN_LED, 1);
@@ -210,6 +224,12 @@ static uint32_t switch_off_led_task(void)
 
 static uint32_t init_sensors_task(void)
 {
+    if (ccs811_init() != 0)
+    {
+        LOG(LVL_ERROR, "Failed to init the ccs811 sensor");
+    }
+    environmental_data.gas_sensor_is_running = false;
+
     if (hts221_init() == 0)
     {
         if (hts221_enable() != 0)
@@ -225,6 +245,10 @@ static uint32_t init_sensors_task(void)
     {
         LOG(LVL_ERROR, "Failed to register event handler for hts221");
     }
+    if (GPIO_register_for_event(CCS_INT, GPIO_NOPULL, GPIO_EVENT_HL, 10, ccs811_interrupt_handler) != GPIO_RES_OK)
+    {
+        LOG(LVL_ERROR, "Failed to register event handler for ccs811");
+    }
     if (GPIO_register_for_event(HW416, GPIO_NOPULL, GPIO_EVENT_LH, 10, hw416_interrupt_handler) != GPIO_RES_OK)
     {
         LOG(LVL_ERROR, "Failed to register event handler for hw416");
@@ -237,12 +261,9 @@ static uint32_t init_sensors_task(void)
     {
         LOG(LVL_ERROR, "Failed to init battery measurement module");
     }
+
     // Read the hts221 sensor to clear the flag of data-ready and to activate the interrupt handler by the next one-shot measurement
     read_temperature_and_humidity();
-    state = SM_MEAS_TRIGGER_TEMPERATURE_CONV;
-    App_Scheduler_addTask_execTime(measurement_sm_task,
-                                   APP_SCHEDULER_SCHEDULE_ASAP,
-                                   EXECUTION_TIME_US);
 
     // Configure the green led pin as output
     if (sx1509_set_pin_as_output(BANK_B, GREEN_LED) != 0)
@@ -254,9 +275,14 @@ static uint32_t init_sensors_task(void)
     {
         LOG(LVL_ERROR, "Error while setting the pin of green led to low");
     }
+
     // Call a task to switch off the led after one second
     App_Scheduler_addTask_execTime(switch_off_led_task, TASK_DELAY_TIME_MS, EXECUTION_TIME_US);
 
+    state = SM_MEAS_TRIGGER_TEMPERATURE_CONV;
+    App_Scheduler_addTask_execTime(measurement_sm_task,
+                                   TASK_DELAY_TIME_MS,
+                                   EXECUTION_TIME_US);
     return APP_SCHEDULER_STOP_TASK;
 }
 
@@ -293,7 +319,9 @@ void App_init(const app_global_functions_t *functions)
     nrf_gpio_cfg_output(VDD_PWD_CTRL);
     nrf_gpio_pin_set(VDD_PWD_CTRL); // Consumes about 70 µA
 
-    App_Scheduler_addTask_execTime(init_sensors_task, TASK_DELAY_TIME_MS, EXECUTION_TIME_US);
+    App_Scheduler_addTask_execTime(ccs811_pre_init, TASK_DELAY_TIME_MS, EXECUTION_TIME_US);
+
+    App_Scheduler_addTask_execTime(init_sensors_task, 2 * TASK_DELAY_TIME_MS, EXECUTION_TIME_US);
 
     // Start the stack
     lib_state->startStack();

@@ -5,7 +5,7 @@ APP_PRINTING=yes
 
 # Use App Scheduler and configure it
 APP_SCHEDULER=yes
-APP_SCHEDULER_TASKS=3
+APP_SCHEDULER_TASKS=6
 
 # Add lib to use GPIO interrupts
 SRCS +=$(SRCS_PATH)gpio_nrf52.c
@@ -19,4 +19,5 @@ HAL_I2C=yes
 HAL_VOLTAGE=yes
 
 HTS221=yes
+CCS811=yes
 SX1509=yes
