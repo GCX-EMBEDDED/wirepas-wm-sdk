@@ -241,19 +241,19 @@ static uint32_t init_sensors_task(void)
     {
         LOG(LVL_ERROR, "Failed to init the hts221 sensor");
     }
-    if (GPIO_register_for_event(HTS_INT, GPIO_NOPULL, GPIO_EVENT_HL, 10, hts221_interrupt_handler) != GPIO_RES_OK)
+    if (GPIO_register_for_event(HTS_INT, GPIO_PULLUP, GPIO_EVENT_HL, 10, hts221_interrupt_handler) != GPIO_RES_OK)
     {
         LOG(LVL_ERROR, "Failed to register event handler for hts221");
     }
-    if (GPIO_register_for_event(CCS_INT, GPIO_NOPULL, GPIO_EVENT_HL, 10, ccs811_interrupt_handler) != GPIO_RES_OK)
+    if (GPIO_register_for_event(CCS_INT, GPIO_PULLUP, GPIO_EVENT_HL, 10, ccs811_interrupt_handler) != GPIO_RES_OK)
     {
         LOG(LVL_ERROR, "Failed to register event handler for ccs811");
     }
-    if (GPIO_register_for_event(HW416, GPIO_NOPULL, GPIO_EVENT_LH, 10, hw416_interrupt_handler) != GPIO_RES_OK)
+    if (GPIO_register_for_event(HW416, GPIO_PULLDOWN, GPIO_EVENT_LH, 150, hw416_interrupt_handler) != GPIO_RES_OK)
     {
         LOG(LVL_ERROR, "Failed to register event handler for hw416");
     }
-    if (GPIO_register_for_event(BUTTON, GPIO_NOPULL, GPIO_EVENT_HL, 10, button_interrupt_handler) != GPIO_RES_OK)
+    if (GPIO_register_for_event(BUTTON, GPIO_PULLUP, GPIO_EVENT_HL, 150, button_interrupt_handler) != GPIO_RES_OK)
     {
         LOG(LVL_ERROR, "Failed to register event handler for button press");
     }
