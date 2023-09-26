@@ -22,7 +22,7 @@
 #include "sx1509.h"
 
 #define DEBUG_LOG_MODULE_NAME "MEETING_ROOM_MONITOR_APP"
-/** To activate logs, configure the following line with "LVL_INFO". */
+
 #define DEBUG_LOG_MAX_LEVEL LVL_DEBUG
 
 #include "debug_log.h"
@@ -34,11 +34,10 @@
 /** Max time needed to execute the periodic work, in us */
 #define EXECUTION_TIME_US 2500
 
+/** Delay time needed before executing some tasks, in ms */
 #define TASK_DELAY_TIME_MS 1000
 
-/** Endpoint to change the sending period value */
-#define SET_PERIOD_EP 10
-
+/** Data end-point */
 #define DATA_EP 1
 
 #define MSG_ID_READING 0
@@ -185,7 +184,8 @@ void hts221_interrupt_handler(uint8_t pin, gpio_event_e event)
 
 void hw416_interrupt_handler(uint8_t pin, gpio_event_e event)
 {
-    LOG(LVL_DEBUG, "Movement has been detected!, Movement_counter=%u", ++environmental_data.movement_counter);
+    ++environmental_data.movement_counter;
+    LOG(LVL_DEBUG, "Movement has been detected!, Movement_counter=%u", environmental_data.movement_counter);
 }
 
 static uint32_t init_sensors(void)
@@ -215,7 +215,7 @@ static uint32_t init_sensors(void)
 void App_init(const app_global_functions_t *functions)
 {
     LOG_INIT();
-    LOG(LVL_INFO, "App_init");
+    LOG(LVL_INFO, "MEETING_ROOM_MONITOR_APP INIT");
 
     // Basic configuration of the node with a unique node address
     if (configureNodeFromBuildParameters() != APP_RES_OK)
@@ -236,7 +236,7 @@ void App_init(const app_global_functions_t *functions)
     // Enable power for sensors
     nrf_gpio_pin_dir_set(VDD_PWD_CTRL, NRF_GPIO_PIN_DIR_OUTPUT);
     nrf_gpio_cfg_output(VDD_PWD_CTRL);
-    nrf_gpio_pin_set(VDD_PWD_CTRL); // consumes about 70 µA
+    nrf_gpio_pin_set(VDD_PWD_CTRL); // Consumes about 70 µA
 
     App_Scheduler_addTask_execTime(init_sensors, TASK_DELAY_TIME_MS, EXECUTION_TIME_US);
 
